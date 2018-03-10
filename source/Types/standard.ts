@@ -9,7 +9,7 @@ export interface IHashMap<V> {
 /**
  * An instantiable (non-abstract) class Constructor.
  */
-export interface IConstructable<T> {
+export interface IConstructable<T = any> {
   new (...args: any[]): T;
 }
 

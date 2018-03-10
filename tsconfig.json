@@ -12,6 +12,7 @@
 		"module": "commonjs",
 		"noEmitOnError": true,
 		"noImplicitAny": true,
+		"noImplicitThis": false,
 		"outDir": "./dist",
 		"sourceMap": true,
 		"strict": true,
@@ -19,8 +20,7 @@
 		"target": "es5"
 	},
 	"include": [
-		"source/**/*.ts",
-		"test/**/*.ts"
+		"source/**/*.ts"
 	],
 	"exclude": [
 		"node_modules"
