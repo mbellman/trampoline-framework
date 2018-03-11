@@ -1,3 +1,4 @@
+yarn
 yarn build
 
 read -p "Commit message: " message;
