@@ -1,11 +1,10 @@
 yarn checkin
 
-read -p "Version bump (major | minor | patch): " bump;
+read -p "Version bump (major | minor | patch): " bump
 
 case $bump in
   "major" | "minor" | "patch")
-    npm version $bump -m "Deploying %s";
-    npm login
+    npm version $bump -m "Deploying %s"
     npm publish
     ;;
   *)
