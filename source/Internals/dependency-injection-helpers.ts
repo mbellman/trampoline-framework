@@ -1,18 +1,28 @@
-import { createMetadataDefiner, createOwnMetadataGetter, MetaDataDefiner, MetaDataGetter } from '../Internal/reflection-helpers';
-import { IConstructable, IHashMap } from '../Types';
+import { createMetadataDefiner, createOwnMetadataGetter, MetaDataDefiner, MetaDataGetter } from './reflection-helpers';
+import { IConstructable, IHashMap } from '../Types/standard-types';
+import { DecoratorTarget } from '../Types/decorator-types';
 
 const autowirableMembersKey = Symbol('autowirable-members');
 const autowirableParametersKey = Symbol('autowirable-parameters');
 
-type AutowirableSaver<T> = (constructable: IConstructable, autowirableValue: T) => void;
+type AutowirableSaver<T> = (
+  target: any,
+  autowirableValue: T
+) => void;
 
-function createAutowirableSaver <T extends IAutowirable>(getter: MetaDataGetter<T[]>, definer: MetaDataDefiner<T[]>): AutowirableSaver<T> {
-  return (constructable: IConstructable, autowirableValue: T) => {
-    const autowirables: T[] = getter(constructable);
+function createAutowirableSaver <T extends IAutowirable>(
+  getAutowirables: MetaDataGetter<T[]>,
+  defineAutowirables: MetaDataDefiner<T[]>
+): AutowirableSaver<T> {
+  return (
+    target: any,
+    autowirableValue: T
+  ) => {
+    const autowirables: T[] = getAutowirables(target);
 
     autowirables.push(autowirableValue);
 
-    definer(constructable, autowirables);
+    defineAutowirables(target, autowirables);
   };
 }
 
@@ -22,11 +32,11 @@ export interface IAutowirable {
 }
 
 export interface IAutowirableMember extends IAutowirable {
-  name: string;
+  memberName: string;
 }
 
 export interface IAutowirableParameter extends IAutowirable {
-  method: string;
+  methodName: string;
   parameterIndex: number;
 }
 

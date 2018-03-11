@@ -6,7 +6,9 @@ export class Map<K = any, V = any> {
   private _keys: K[] = [];
   private _values: V[] = [];
 
-  public constructor (entries: MapIterable<K, V> = []) {
+  public constructor (
+    entries: MapIterable<K, V> = []
+  ) {
     for (let i = 0; i < entries.length; i++) {
       const entry: MapEntry<K, V> = entries[i];
 
@@ -24,7 +26,9 @@ export class Map<K = any, V = any> {
     this._values.length = 0;
   }
 
-  public delete (key: K): void {
+  public delete (
+    key: K
+  ): void {
     const keyIndex: number = this._keys.indexOf(key);
 
     if (keyIndex > -1) {
@@ -39,7 +43,9 @@ export class Map<K = any, V = any> {
     });
   }
 
-  public forEach (handler: MapIterationHandler<K, V>): void {
+  public forEach (
+    handler: MapIterationHandler<K, V>
+  ): void {
     this._keys.forEach((key: K, i: number) => {
       const value: V = this._values[i];
 
@@ -47,13 +53,17 @@ export class Map<K = any, V = any> {
     });
   }
 
-  public get (key: K): V {
+  public get (
+    key: K
+  ): V {
     const keyIndex: number = this._keys.indexOf(key);
 
     return this._values[keyIndex];
   }
 
-  public has (key: K): boolean {
+  public has (
+    key: K
+  ): boolean {
     return this._keys.indexOf(key) > -1;
   }
 
@@ -61,7 +71,10 @@ export class Map<K = any, V = any> {
     return this._keys.slice(0);
   }
 
-  public set (key: K, value: V): void {
+  public set (
+    key: K,
+    value: V
+  ): void {
     const keyIndex: number = this._keys.indexOf(key);
 
     if (keyIndex > -1) {

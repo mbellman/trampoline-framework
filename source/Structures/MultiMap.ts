@@ -6,7 +6,9 @@ export class MultiMap<K = any, V = any> {
   private _keys: K[] = [];
   private _valueIterables: V[][] = [];
 
-  public constructor (iterable: MultiMapIterable<K, V> = []) {
+  public constructor (
+    iterable: MultiMapIterable<K, V> = []
+  ) {
     for (let i = 0; i < iterable.length; i++) {
       const entry: MultiMapEntry<K, V> = iterable[i];
 
@@ -24,7 +26,9 @@ export class MultiMap<K = any, V = any> {
     this._valueIterables.length = 0;
   }
 
-  public forEach (handler: MultiMapIterationHandler<K, V>): void {
+  public forEach (
+    handler: MultiMapIterationHandler<K, V>
+  ): void {
     this._keys.forEach((key: K, i: number) => {
       const values: V[] = this._valueIterables[i];
 
@@ -32,17 +36,24 @@ export class MultiMap<K = any, V = any> {
     });
   }
 
-  public get (key: K): V[] {
+  public get (
+    key: K
+  ): V[] {
     const keyIndex: number = this._keys.indexOf(key);
 
     return this._valueIterables[keyIndex];
   }
 
-  public has (key: K): boolean {
+  public has (
+    key: K
+  ): boolean {
     return this._keys.indexOf(key) > -1;
   }
 
-  public put (key: K, value: V): void {
+  public put (
+    key: K,
+    value: V
+  ): void {
     const keyIndex: number = this._keys.indexOf(key);
 
     if (keyIndex > -1) {
@@ -55,7 +66,10 @@ export class MultiMap<K = any, V = any> {
     }
   }
 
-  public remove (key: K, value?: V): void {
+  public remove (
+    key: K,
+    value?: V
+  ): void {
     const keyIndex: number = this._keys.indexOf(key);
 
     if (keyIndex > -1) {

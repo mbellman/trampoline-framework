@@ -1,11 +1,17 @@
-import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../Internal/dependency-injection-helpers';
-import { IConstructable } from '../Types';
-import { toArray } from '../Utils';
+import { createNormalizedDecorator } from '../Internals/decorator-helpers';
+import { DecoratorTarget } from '../Types/decorator-types';
+import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../Internals/dependency-injection-helpers';
+import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../Internals/reflection-helpers';
+import { IConstructable } from '../Types/standard-types';
+import { toArray } from '../Utils/array-utils';
 
 const CONSTRUCTOR_METHOD_ID = '__constructor__';
 
-function autowireArguments (args: IArguments, autowirableParameters: IAutowirableParameter[]): any[] {
-  const autowiredArgs = toArray(arguments);
+function autowireArguments (
+  args: IArguments,
+  autowirableParameters: IAutowirableParameter[]
+): any[] {
+  const autowiredArgs = toArray(args);
 
   autowirableParameters.forEach(({ parameterIndex, type, constructorArgs }) => {
     autowiredArgs[parameterIndex] = new type(...constructorArgs);
@@ -14,7 +20,10 @@ function autowireArguments (args: IArguments, autowirableParameters: IAutowirabl
   return autowiredArgs;
 }
 
-function createWiredMethod (originalMethod: Function, methodAutowirableParameters: IAutowirableParameter[]) {
+function createWiredMethod (
+  originalMethod: Function,
+  methodAutowirableParameters: IAutowirableParameter[]
+): Function {
   return function () {
     const autowiredArguments = autowireArguments(arguments, methodAutowirableParameters);
 
@@ -22,62 +31,77 @@ function createWiredMethod (originalMethod: Function, methodAutowirableParameter
   };
 }
 
-function enableAutowirableParameterChecking (constructable: IConstructable): void {
-  const allAutowirableParameters = getAutowirableParameters(constructable);
+function enableAutowirableParameterChecking (
+  target: Function
+): void {
+  const { prototype } = target;
+  const allAutowirableParameters = getAutowirableParameters(target);
 
-  Object.keys(constructable.prototype).forEach(methodName => {
-    const methodAutowirableParameters = allAutowirableParameters.filter(({ method }) => method === methodName);
+  Object.keys(prototype)
+    .forEach(targetMethodName => {
+      const methodAutowirableParameters = allAutowirableParameters
+        .filter(({ methodName }) => methodName === targetMethodName);
 
-    if (methodAutowirableParameters.length > 0) {
-      const originalMethod = constructable.prototype[methodName];
+      if (methodAutowirableParameters.length > 0) {
+        const originalMethod = prototype[targetMethodName];
 
-      constructable.prototype[methodName] = createWiredMethod(originalMethod, methodAutowirableParameters);
-    }
-  });
+        prototype[targetMethodName] = createWiredMethod(originalMethod, methodAutowirableParameters);
+      }
+    });
 }
 
-export function Autowired (...constructorArgs: any[]): PropertyDecorator & ParameterDecorator {
-  return (target: any, propertyName: string | symbol, parameterIndex?: number) => {
-    if (typeof parameterIndex === 'number') {
-      // Parameter decorator
-      const paramTypes: IConstructable[] = Reflect.getMetadata('design:paramtypes', target, propertyName);
-      const methodName: string = propertyName ? propertyName as string : CONSTRUCTOR_METHOD_ID;
+export function Autowired (
+  ...constructorArgs: any[]
+): PropertyDecorator & ParameterDecorator {
+  return createNormalizedDecorator(
+    (target: DecoratorTarget, propertyKey: string | symbol, parameterIndex?: number) => {
+      const { prototype } = target as Function;
 
-      saveAutowirableParameter(target.constructor, {
-        type: paramTypes[parameterIndex],
-        constructorArgs,
-        method: methodName,
-        parameterIndex
-      });
-    } else {
-      // Property decorator
-      const type: IConstructable = Reflect.getMetadata('design:type', target, propertyName);
+      if (typeof parameterIndex === 'number') {
+        // Parameter decorator
+        const isConstructorParameter = !propertyKey;
+        const reflectTarget = isConstructorParameter ? target : prototype;
+        const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
+        const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
 
-      saveAutowirableMember(target.constructor, {
-        type,
-        constructorArgs,
-        name: propertyName as string
-      });
-    }
-  };
-}
-
-export function Wired (constructable: IConstructable): IConstructable {
-  const autowirableConstructorParameters = getAutowirableParameters(constructable)
-    .filter(({ method }) => method === CONSTRUCTOR_METHOD_ID);
-
-  enableAutowirableParameterChecking(constructable);
-
-  return class extends constructable {
-    public constructor (...args: any[]) {
-      const autowiredArguments = autowireArguments(arguments, autowirableConstructorParameters);
-
-      super(...autowiredArguments);
-
-      getAutowirableMembers(constructable)
-        .forEach(({ name, type, constructorArgs }) => {
-          this[name] = new type(...constructorArgs);
+        saveAutowirableParameter(target, {
+          type: parameterTypes[parameterIndex],
+          constructorArgs,
+          methodName,
+          parameterIndex
         });
+      } else {
+        // Property decorator
+        const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
+
+        saveAutowirableMember(target, {
+          type,
+          constructorArgs,
+          memberName: propertyKey as string
+        });
+      }
     }
-  };
+  ) as PropertyDecorator & ParameterDecorator;
 }
+
+export const Wired = createNormalizedDecorator(
+  (target: DecoratorTarget): IConstructable => {
+    enableAutowirableParameterChecking(target as Function);
+
+    const autowirableConstructorParameters = getAutowirableParameters(target)
+      .filter(({ methodName }) => methodName === CONSTRUCTOR_METHOD_ID);
+
+    return class extends (target as IConstructable) {
+      public constructor (...args: any[]) {
+        const autowiredArguments = autowireArguments(arguments, autowirableConstructorParameters);
+
+        super(...autowiredArguments);
+
+        getAutowirableMembers(target)
+          .forEach(({ memberName, type, constructorArgs }) => {
+            this[memberName] = new type(...constructorArgs);
+          });
+      }
+    };
+  }
+) as ClassDecorator;

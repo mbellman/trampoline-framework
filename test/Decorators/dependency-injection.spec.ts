@@ -1,7 +1,6 @@
 import { Autowired, Wired } from '../../source';
 import { expect } from 'chai';
 import 'mocha';
-import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../../source/Internal/dependency-injection-helpers';
 
 class A {
   public input: string;
@@ -59,8 +58,6 @@ describe('Dependency Injection', () => {
       const b: B = new B();
 
       b.method();
-
-      console.log(b);
 
       expect(b.a1.input).to.equal('hello');
       expect(b.a2.input).to.equal('goodbye');
