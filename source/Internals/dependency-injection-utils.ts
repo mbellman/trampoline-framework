@@ -1,6 +1,6 @@
-import { createMetadataDefiner, createOwnMetadataGetter, MetaDataDefiner, MetaDataGetter } from './reflection-helpers';
-import { IConstructable, IHashMap } from '../Types/standard-types';
+import { createMetadataDefiner, createOwnMetadataGetter, MetaDataDefiner, MetaDataGetter } from './reflection-utils';
 import { DecoratorTarget } from '../Types/decorator-types';
+import { IConstructable, IHashMap } from '../Types/standard-types';
 
 const autowirableMembersKey = Symbol('autowirable-members');
 const autowirableParametersKey = Symbol('autowirable-parameters');

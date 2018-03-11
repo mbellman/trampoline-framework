@@ -1,4 +1,4 @@
-import { clone } from '../Utils/generic-utils';
+import { clone } from '../Internals/object-utils';
 import 'reflect-metadata';
 
 /**

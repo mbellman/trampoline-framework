@@ -1,9 +1,10 @@
-import { createNormalizedDecorator } from '../Internals/decorator-helpers';
+import { createNormalizedDecorator } from '../Internals/decorator-utils';
 import { DecoratorFactory, DecoratorTarget } from '../Types/decorator-types';
-import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../Internals/dependency-injection-helpers';
-import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../Internals/reflection-helpers';
+import { forObjectMethods } from '../Internals/object-utils';
+import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../Internals/dependency-injection-utils';
+import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../Internals/reflection-utils';
 import { IConstructable } from '../Types/standard-types';
-import { toArray } from '../Utils/array-utils';
+import { toArray } from '../Internals/array-utils';
 
 const CONSTRUCTOR_METHOD_ID = '__constructor__';
 
@@ -63,17 +64,14 @@ function enableAutowirableParameterChecks (
   const { prototype } = target;
   const allAutowirableParameters = getAutowirableParameters(target);
 
-  Object.keys(prototype)
-    .forEach(targetMethodName => {
-      const methodAutowirableParameters = allAutowirableParameters
-        .filter(({ methodName }) => methodName === targetMethodName);
+  forObjectMethods(prototype, (method, targetMethodName) => {
+    const methodAutowirableParameters = allAutowirableParameters
+      .filter(({ methodName }) => methodName === targetMethodName);
 
-      if (methodAutowirableParameters.length > 0) {
-        const originalMethod = prototype[targetMethodName];
-
-        prototype[targetMethodName] = createWiredMethod(originalMethod, methodAutowirableParameters);
-      }
-    });
+    if (methodAutowirableParameters.length > 0) {
+      prototype[targetMethodName] = createWiredMethod(method, methodAutowirableParameters);
+    }
+  });
 }
 
 /**

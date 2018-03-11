@@ -1,3 +1,8 @@
+/**
+ * Converts an iterable value to an Array.
+ *
+ * @internal
+ */
 export function toArray <T>(
   iterable: Iterable<T>
 ): T[] {

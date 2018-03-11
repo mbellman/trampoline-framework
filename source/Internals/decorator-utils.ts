@@ -1,5 +1,5 @@
-import { Decorator, DecoratorTarget } from '../Types/decorator-types';
 import { Callback } from '../Types/standard-types';
+import { Decorator, DecoratorTarget } from '../Types/decorator-types';
 
 /**
  * Normalizes a decorator target parameter to its constructor function.
