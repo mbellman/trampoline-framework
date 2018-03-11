@@ -6,6 +6,7 @@ case $bump in
   "major" | "minor" | "patch")
     npm version $bump -m "Deploying %s"
     npm publish
+    git push
     ;;
   *)
     echo "Invalid version bump!"
