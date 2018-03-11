@@ -1,5 +1,5 @@
 import { createNormalizedDecorator } from '../Internals/decorator-helpers';
-import { DecoratorTarget } from '../Types/decorator-types';
+import { DecoratorFactory, DecoratorTarget } from '../Types/decorator-types';
 import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../Internals/dependency-injection-helpers';
 import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../Internals/reflection-helpers';
 import { IConstructable } from '../Types/standard-types';
@@ -7,6 +7,12 @@ import { toArray } from '../Utils/array-utils';
 
 const CONSTRUCTOR_METHOD_ID = '__constructor__';
 
+/**
+ * Returns an array of arguments with autowired values. The provided
+ * {autowirableParameters} array determines which argument indices
+ * need autowiring, as well as the constructable type and constructor
+ * arguments to use.
+ */
 function autowireArguments (
   args: IArguments,
   autowirableParameters: IAutowirableParameter[]
@@ -20,18 +26,32 @@ function autowireArguments (
   return autowiredArgs;
 }
 
+/**
+ * Returns a wrapper method for {originalMethod} which autowires
+ * arguments whenever the method is called and passes the autowired
+ * arguments array along to {originalMethod}.
+ */
 function createWiredMethod (
   originalMethod: Function,
-  methodAutowirableParameters: IAutowirableParameter[]
+  autowirableParameters: IAutowirableParameter[]
 ): Function {
   return function () {
-    const autowiredArguments = autowireArguments(arguments, methodAutowirableParameters);
+    const autowiredArguments = autowireArguments(arguments, autowirableParameters);
 
     originalMethod.apply(this, autowiredArguments);
   };
 }
 
-function enableAutowirableParameterChecking (
+/**
+ * Loops over each method on a target constructor function's
+ * prototype and, based on the autowirable parameters metadata
+ * saved via @Autowired() parameter decorators, wraps the
+ * prototype's methods where autowiring will need to occur.
+ * Only methods with corresponding autowired parameters will
+ * be wrapped, and createWiredMethod() will be used to create
+ * the wrapper methods.
+ */
+function enableAutowirableParameterChecks (
   target: Function
 ): void {
   const { prototype } = target;
@@ -50,9 +70,27 @@ function enableAutowirableParameterChecking (
     });
 }
 
-export function Autowired (
+/**
+ * A property and parameter decorator which saves autowiring metadata
+ * to a class. Arguments can be passed to the decorator to be passed
+ * into the autowired instance at construction. All classes which
+ * utilize autowiring must also be decorated with @Wired.
+ *
+ * ```
+ * @Wired class Consumer {
+ *   @Autowired() public service: Service;
+ * }
+ *
+ * @Wired class Consumer2 {
+ *   public fetch (@Autowired() service?: Service): {
+ *     return service.fetch();
+ *   }
+ * }
+ * ```
+ */
+export const Autowired: DecoratorFactory<PropertyDecorator & ParameterDecorator> = (
   ...constructorArgs: any[]
-): PropertyDecorator & ParameterDecorator {
+) => {
   return createNormalizedDecorator(
     (target: DecoratorTarget, propertyKey: string | symbol, parameterIndex?: number) => {
       const { prototype } = target as Function;
@@ -82,11 +120,15 @@ export function Autowired (
       }
     }
   ) as PropertyDecorator & ParameterDecorator;
-}
+};
 
+/**
+ * A class decorator which enables all @Autowired() properties
+ * or method parameters to be autowired.
+ */
 export const Wired = createNormalizedDecorator(
   (target: DecoratorTarget): IConstructable => {
-    enableAutowirableParameterChecking(target as Function);
+    enableAutowirableParameterChecks(target as Function);
 
     const autowirableConstructorParameters = getAutowirableParameters(target)
       .filter(({ methodName }) => methodName === CONSTRUCTOR_METHOD_ID);

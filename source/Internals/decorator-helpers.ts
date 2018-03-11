@@ -3,9 +3,6 @@ import { Callback } from '../Types/standard-types';
 
 /**
  * Normalizes a decorator target parameter to its constructor function.
- *
- * @param {Function} target
- * @returns {Function}
  */
 export function normalizeTargetToConstructor (
   target: Function
@@ -20,10 +17,6 @@ export function normalizeTargetToConstructor (
  * target value to the original provided decorator. An optional normalizer
  * can be provided instead of the default, which normalizes the target
  * to its original constructor function.
- *
- * @param {Decorator} decorator - The decorator function to normalize
- * @param {?Callback<Function>} normalizer - The function used to normalize the decorator target parameter
- * @returns {Decorator}
  */
 export function createNormalizedDecorator (
   decorator: Decorator,
