@@ -12,7 +12,7 @@
     "build": "yarn test && tsc",
     "test": "nyc mocha",
     "checkin": "sh ./checkin.sh",
-    "patch": "yarn checkin && npm version patch && npm publish"
+    "patch": "yarn checkin && npm version patch"
   },
   "repository": {
     "type": "git",
