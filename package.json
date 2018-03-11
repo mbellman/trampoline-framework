@@ -11,7 +11,7 @@
   "scripts": {
     "build": "yarn test && tsc",
     "test": "nyc mocha",
-    "deploy": "yarn build && git add . && sh ./publish.sh"
+    "deploy": "sh ./deploy.sh"
   },
   "repository": {
     "type": "git",
