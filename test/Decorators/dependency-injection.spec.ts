@@ -11,8 +11,8 @@ class A {
 }
 
 describe('Dependency Injection Decorators', () => {
-  describe('@Autowired(...args) {field}: T', () => {
-    it('should inject a new T instance into {field} on instantiation', () => {
+  describe('Property autowiring', () => {
+    it('should inject a new T instance into autowired properties on instantiation', () => {
       @Wired class B {
         @Autowired() public a: A;
       }
@@ -33,7 +33,7 @@ describe('Dependency Injection Decorators', () => {
     });
   });
 
-  describe('@Autowired() {param}: T', () => {
+  describe('Parameter autowiring', () => {
     it('Should autowire method parameters', () => {
       @Wired class B {
         public a1: A;

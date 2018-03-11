@@ -1,16 +1,25 @@
 import { clone } from '../Utils/generic-utils';
 import 'reflect-metadata';
 
+/**
+ * @internal
+ */
 export type MetaDataGetter<T> = (
   target: any,
   propertyKey?: string | symbol
 ) => T;
 
+/**
+ * @internal
+ */
 export type MetaDataDefiner<T> = (
   target: any,
   metaData: T
 ) => void;
 
+/**
+ * @internal
+ */
 export function createOwnMetadataGetter <T>(
   key: string | symbol,
   defaultData?: T
@@ -27,6 +36,9 @@ export function createOwnMetadataGetter <T>(
   };
 }
 
+/**
+ * @internal
+ */
 export function createMetadataDefiner <T>(
   key: string | symbol
 ): MetaDataDefiner<T> {
@@ -36,6 +48,9 @@ export function createMetadataDefiner <T>(
   ) => Reflect.defineMetadata(key, metaData, target);
 }
 
+/**
+ * @internal
+ */
 export function getReflectedPropertyType (
   target: any,
   propertyKey: string | symbol
@@ -43,6 +58,9 @@ export function getReflectedPropertyType (
   return Reflect.getMetadata('design:type', target, propertyKey);
 }
 
+/**
+ * @internal
+ */
 export function getReflectedMethodParameterTypes (
   target: any,
   methodName: string | symbol

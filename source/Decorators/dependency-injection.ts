@@ -12,6 +12,8 @@ const CONSTRUCTOR_METHOD_ID = '__constructor__';
  * {autowirableParameters} array determines which argument indices
  * need autowiring, as well as the constructable type and constructor
  * arguments to use.
+ *
+ * @internal
  */
 function autowireArguments (
   args: IArguments,
@@ -30,6 +32,8 @@ function autowireArguments (
  * Returns a wrapper method for {originalMethod} which autowires
  * arguments whenever the method is called and passes the autowired
  * arguments array along to {originalMethod}.
+ *
+ * @internal
  */
 function createWiredMethod (
   originalMethod: Function,
@@ -50,6 +54,8 @@ function createWiredMethod (
  * Only methods with corresponding autowired parameters will
  * be wrapped, and createWiredMethod() will be used to create
  * the wrapper methods.
+ *
+ * @internal
  */
 function enableAutowirableParameterChecks (
   target: Function
@@ -124,9 +130,9 @@ export const Autowired: DecoratorFactory<PropertyDecorator & ParameterDecorator>
 
 /**
  * A class decorator which enables all @Autowired() properties
- * or method parameters to be autowired.
+ * or method parameters to be autowired at instantiation.
  */
-export const Wired = createNormalizedDecorator(
+export const Wired: ClassDecorator = createNormalizedDecorator(
   (target: DecoratorTarget): IConstructable => {
     enableAutowirableParameterChecks(target as Function);
 
