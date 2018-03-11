@@ -1,3 +1,5 @@
+yarn build
+
 read -p "Commit message: " message;
 
 git add .
