@@ -8,13 +8,15 @@ import { IConstructable, Method } from '../../types/standard-types';
  *
  * @internal
  */
-const createFinalPropertyDescriptor = (
+function createFinalPropertyDescriptor (
   { value }: PropertyDescriptor
-): PropertyDescriptor => ({
-  value,
-  writable: false,
-  configurable: false
-});
+): PropertyDescriptor {
+  return {
+    value,
+    writable: false,
+    configurable: false
+  };
+}
 
 /**
  * Returns a non-extensible class from a target constructable.

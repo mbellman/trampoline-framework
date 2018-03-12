@@ -2,6 +2,12 @@
  * A class which provides Singleton pattern behavior to extending
  * classes. Contention about Singletons aside, this at least makes
  * it unnecessary to implement the pattern for every Singleton class.
+ *
+ * ```
+ * class A extends Singleton { }
+ *
+ * const a: A = A.getInstance();
+ * ```
  */
 export default abstract class Singleton {
   private static readonly CONSTRUCTOR_SYMBOL: unique symbol = Symbol('singleton');
