@@ -35,10 +35,10 @@ function createFinalClass (
         // is instantiated using a constructor other than its
         // own (likely indicating a super() call from a derived
         // class constructor).
-        const { name: derivedCtorName } = this.constructor;
-        const { name: finalCtorName } = target.constructor;
+        const { name: derivedClassName } = this.constructor;
+        const { name: finalClassName } = target.constructor;
 
-        throw new Error(`Cannot instantiate ${derivedCtorName}: invalid extension of ${finalCtorName}!`);
+        throw new Error(`Cannot instantiate ${derivedClassName}: invalid extension of ${finalClassName}!`);
       }
     }
   }
@@ -49,6 +49,34 @@ function createFinalClass (
   return FinalClass;
 }
 
+/**
+ * A class and method decorator which prevents extension and overriding,
+ * respectively.
+ *
+ * @example 1:
+ * ```
+ * @Final class A {
+ * }
+ *
+ * // Throws Error in strict mode
+ * class B extends A { }
+ *
+ * // Throws Error in non-strict mode
+ * const b: B = new B();
+ * ```
+ *
+ * @example 2:
+ * ```
+ * class A {
+ *   @Final public method (): void { }
+ * }
+ *
+ * class B extends A {
+ *   // Throws Error
+ *   public method (): void { }
+ * }
+ * ```
+ */
 export const Final = createDecorator<ClassDecorator & MethodDecorator>(
   (target: DecoratorTarget, propertyKey?: string | symbol, propertyDescriptor?: PropertyDescriptor) => {
     if (propertyKey && propertyDescriptor) {
