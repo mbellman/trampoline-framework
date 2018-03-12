@@ -4,18 +4,18 @@
  *
  * @internal
  */
-type ObjectIterator<T = any> = (
+type ObjectPropertyIterator<T = any> = (
   object: any,
-  iterationHandler: ObjectIterationHandler<T>
+  iterationHandler: ObjectPropertyIterationHandler<T>
 ) => void;
 
 /**
  * A callback function which handles object property iterations for an
- * ObjectIterator function.
+ * ObjectPropertyIterator function.
  *
  * @internal
  */
-type ObjectIterationHandler<T = any> = (
+type ObjectPropertyIterationHandler<T = any> = (
   property: T,
   propertyKey: string,
   object: any
@@ -34,14 +34,16 @@ type FilterFunction<T> = (
 /**
  * @internal
  */
-function createFilteredObjectIterator <T>(
+function createFilteredObjectPropertyIterator <T>(
   filterFunction: FilterFunction<T>
-): ObjectIterator<T> {
-  return (object: any, iterationHandler: ObjectIterationHandler<T>) => {
+): ObjectPropertyIterator<T> {
+  return (object: any, iterationHandler: ObjectPropertyIterationHandler<T>) => {
     Object.keys(object)
       .forEach(propertyKey => {
-        if (filterFunction(object[propertyKey])) {
-          iterationHandler(object[propertyKey], propertyKey, object);
+        const property = object[propertyKey];
+
+        if (filterFunction(property)) {
+          iterationHandler(property, propertyKey, object);
         }
       });
   };
@@ -61,6 +63,6 @@ export function clone <T>(object: T): T {
  *
  * @internal
  */
-export const forObjectMethods = createFilteredObjectIterator<Function>(
+export const forMethodsOnObject = createFilteredObjectPropertyIterator<Function>(
   (value: any) => typeof value === 'function'
 );

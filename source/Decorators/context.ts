@@ -1,5 +1,5 @@
 import { DecoratorTarget } from '../Types/decorator-types';
-import { forObjectMethods } from '../Internals/object-utils';
+import { forMethodsOnObject } from '../Internals/object-utils';
 
 /**
  * Returns a property descriptor for a class prototype method which
@@ -27,7 +27,7 @@ function createBoundMethodPropertyDescriptor (
 }
 
 /**
- * A class method decorator which binds the method to instance contexts.
+ * A class method decorator which binds decorated methods to instance contexts.
  *
  * ```
  * class A {
@@ -63,7 +63,7 @@ export const BindAll: ClassDecorator = (
 ): void => {
   const { prototype } = target;
 
-  forObjectMethods(prototype, (method, methodName) => {
+  forMethodsOnObject(prototype, (method, methodName) => {
     const propertyDescriptor = createBoundMethodPropertyDescriptor(method, methodName);
 
     Object.defineProperty(prototype, methodName, propertyDescriptor);
