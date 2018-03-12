@@ -1,5 +1,5 @@
 source/
-tests/
+test/
 coverage/
 .nyc_output/
 checkin.sh
@@ -8,3 +8,6 @@ tsconfig.json
 tslint.json
 yarn.lock
 yarn-error.log
+.eslintignore
+.eslintrc
+.yarnrc
