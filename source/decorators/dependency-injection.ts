@@ -6,6 +6,13 @@ import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter,
 import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../internals/reflection-utils';
 import { toArray } from '../internals/array-utils';
 
+/**
+ * A special ID to refer to the constructor method when saving autowirable
+ * method parameter metadata. Since the constructor propertyKey is undefined,
+ * we supply this value instead.
+ *
+ * @internal
+ */
 const CONSTRUCTOR_METHOD_ID = '__constructor__';
 
 /**
@@ -84,7 +91,7 @@ function enableAutowirableParameterChecks (
  *   @Autowired() public service: Service;
  * }
  *
- * @Wired class DAO {
+ * @Wired class DAO2 {
  *   public fetch (@Autowired('route/to/api.svc') service?: Service): {
  *     return service.fetch();
  *   }
