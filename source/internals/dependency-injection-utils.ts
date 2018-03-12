@@ -2,8 +2,8 @@ import { createMetadataDefiner, createOwnMetadataGetter, MetaDataDefiner, MetaDa
 import { DecoratorTarget } from '../types/decorator-types';
 import { IConstructable, IHashMap } from '../types/standard-types';
 
-const autowirableMembersKey = Symbol('autowirable-members');
-const autowirableParametersKey = Symbol('autowirable-parameters');
+const AUTOWIRABLE_MEMBERS_KEY = Symbol('autowirable-members');
+const AUTOWIRABLE_PARAMETERS_KEY = Symbol('autowirable-parameters');
 
 /**
  * @internal
@@ -20,10 +20,7 @@ function createAutowirableSaver <T extends IAutowirable>(
   getAutowirables: MetaDataGetter<T[]>,
   defineAutowirables: MetaDataDefiner<T[]>
 ): AutowirableSaver<T> {
-  return (
-    target: any,
-    autowirableValue: T
-  ) => {
+  return (target: any, autowirableValue: T) => {
     const autowirables: T[] = getAutowirables(target);
 
     autowirables.push(autowirableValue);
@@ -58,22 +55,22 @@ export interface IAutowirableParameter extends IAutowirable {
 /**
  * @internal
  */
-export const getAutowirableMembers = createOwnMetadataGetter<IAutowirableMember[]>(autowirableMembersKey, []);
+export const getAutowirableMembers = createOwnMetadataGetter<IAutowirableMember[]>(AUTOWIRABLE_MEMBERS_KEY, []);
 
 /**
  * @internal
  */
-export const getAutowirableParameters = createOwnMetadataGetter<IAutowirableParameter[]>(autowirableParametersKey, []);
+export const getAutowirableParameters = createOwnMetadataGetter<IAutowirableParameter[]>(AUTOWIRABLE_PARAMETERS_KEY, []);
 
 /**
  * @internal
  */
-export const defineAutowirableMembers = createMetadataDefiner<IAutowirableMember[]>(autowirableMembersKey);
+export const defineAutowirableMembers = createMetadataDefiner<IAutowirableMember[]>(AUTOWIRABLE_MEMBERS_KEY);
 
 /**
  * @internal
  */
-export const defineAutowirableParameters = createMetadataDefiner<IAutowirableParameter[]>(autowirableParametersKey);
+export const defineAutowirableParameters = createMetadataDefiner<IAutowirableParameter[]>(AUTOWIRABLE_PARAMETERS_KEY);
 
 /**
  * @internal

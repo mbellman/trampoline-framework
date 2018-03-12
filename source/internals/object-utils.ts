@@ -1,6 +1,7 @@
 /**
- * A function which takes an object and iterates over each of its
- * properties using a provided iteration handler function.
+ * A signature for functions which takes an object and iterate
+ * over each of its properties using a provided iteration
+ * handler function.
  *
  * @internal
  */
@@ -10,8 +11,8 @@ type ObjectPropertyIterator<T = any> = (
 ) => void;
 
 /**
- * A callback function which handles object property iterations for an
- * ObjectPropertyIterator function.
+ * A signature for callback functions which handle each iterated
+ * property for an ObjectPropertyIterator function.
  *
  * @internal
  */
@@ -22,12 +23,11 @@ type ObjectPropertyIterationHandler<T = any> = (
 ) => void;
 
 /**
- * A function which receives a value and returns a boolean based
- * on arbitrary criteria.
+ * A signature for filter predicate functions.
  *
  * @internal
  */
-type FilterFunction<T> = (
+type FilterPredicate<T> = (
   value: T
 ) => boolean;
 
@@ -35,14 +35,14 @@ type FilterFunction<T> = (
  * @internal
  */
 function createFilteredObjectPropertyIterator <T>(
-  filterFunction: FilterFunction<T>
+  filterPredicate: FilterPredicate<T>
 ): ObjectPropertyIterator<T> {
   return (object: any, iterationHandler: ObjectPropertyIterationHandler<T>) => {
     Object.keys(object)
       .forEach(propertyKey => {
         const property = object[propertyKey];
 
-        if (filterFunction(property)) {
+        if (filterPredicate(property)) {
           iterationHandler(property, propertyKey, object);
         }
       });

@@ -1,7 +1,7 @@
 /**
  * A class which provides Singleton pattern behavior to extending
- * classes. Contention about Singletons aside, this at least makes
- * it unnecessary to implement the pattern for every Singleton class.
+ * classes. Contention about Singletons aside, this at least saves
+ * the trouble of implementing the pattern for every Singleton class.
  *
  * ```
  * class A extends Singleton { }
@@ -14,7 +14,9 @@ export default abstract class Singleton {
   private static readonly INSTANCE_KEY: unique symbol = Symbol('instance');
   private static [Singleton.INSTANCE_KEY]: Singleton;
 
-  protected constructor (symbol: symbol) {
+  protected constructor (
+    symbol: symbol
+  ) {
     if (symbol !== Singleton.CONSTRUCTOR_SYMBOL) {
       throw new Error('Singleton construction not allowed! Use getInstance() to resolve an instance of this Singleton.');
     }

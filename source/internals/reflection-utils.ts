@@ -24,10 +24,7 @@ export function createOwnMetadataGetter <T>(
   key: string | symbol,
   defaultData?: T
 ): MetaDataGetter<T> {
-  return (
-    target: any,
-    propertyKey?: string | symbol
-  ) => {
+  return (target: any, propertyKey?: string | symbol) => {
     const metaData = propertyKey
       ? Reflect.getOwnMetadata(key, target, propertyKey)
       : Reflect.getOwnMetadata(key, target);
@@ -42,10 +39,7 @@ export function createOwnMetadataGetter <T>(
 export function createMetadataDefiner <T>(
   key: string | symbol
 ): MetaDataDefiner<T> {
-  return (
-    target: any,
-    metaData: T
-  ) => Reflect.defineMetadata(key, metaData, target);
+  return (target: any, metaData: T) => Reflect.defineMetadata(key, metaData, target);
 }
 
 /**

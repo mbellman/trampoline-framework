@@ -9,7 +9,7 @@ export interface IHashMap<V> {
 /**
  * An instantiable (non-abstract) class Constructor.
  */
-export interface IConstructable<T = any> extends Function {
+export interface IConstructable<T = any> {
   new (...args: any[]): T;
 }
 
@@ -29,7 +29,9 @@ export type Extension<T> = T & IHashMap<any>;
 /**
  * A function which takes arguments of type T and returns U.
  */
-export type Method<T, U = any> = (...args: T[]) => U;
+export type Method<T, U = any> = (
+  ...args: T[]
+) => U;
 
 /**
  * A type alias of Method for callback-specific scenarios.

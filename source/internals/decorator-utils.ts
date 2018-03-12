@@ -32,9 +32,9 @@ export function createDecorator <D extends Decorator = Decorator>(
 
 /**
  * Returns a wrapped decorator function which forwards a normalized
- * target value to the original decorator. An optional normalizer
- * can be provided instead of the default, which normalizes the target
- * to its original constructor function.
+ * target value to the provided {decorator}. An optional normalizer
+ * function can be provided instead of the default, which normalizes
+ * the target to its original constructor function.
  *
  * @internal
  */
