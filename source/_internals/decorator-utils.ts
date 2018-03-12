@@ -1,8 +1,21 @@
-import { Callback } from '../Types/standard-types';
-import { Decorator, DecoratorTarget } from '../Types/decorator-types';
+import { Callback, IConstructable } from '../types/standard-types';
+import { Decorator, DecoratorTarget } from '../types/decorator-types';
 
 /**
- * Returns a decorator function typecast to the provided D generic
+ * Normalizes a decorator {target} parameter to its constructor function.
+ *
+ * @internal
+ */
+function normalizeTargetToConstructor (
+  target: any
+): Function {
+  const { prototype } = target;
+
+  return prototype ? prototype.constructor : target.constructor;
+}
+
+/**
+ * Returns a decorator function typecast to the provided generic
  * type parameter, which defaults to Decorator.
  *
  * @todo
@@ -25,7 +38,7 @@ export const createDecorator = <D extends Decorator = Decorator>(
  */
 export const createNormalizedDecorator = <D extends Decorator = Decorator>(
   decorator: Decorator,
-  normalizer: Callback<Function> = normalizeTargetToConstructor,
+  normalizer: Callback<any, DecoratorTarget> = normalizeTargetToConstructor,
 ): D => createDecorator<D>(
   (target: DecoratorTarget, ...args: any[]) => {
     const normalizedTarget = normalizer(target as Function);
@@ -33,16 +46,3 @@ export const createNormalizedDecorator = <D extends Decorator = Decorator>(
     return decorator.call(null, normalizedTarget, ...args);
   }
 );
-
-/**
- * Normalizes a decorator target parameter to its constructor function.
- *
- * @internal
- */
-export function normalizeTargetToConstructor (
-  target: Function
-): Function {
-  const { prototype } = target;
-
-  return prototype ? prototype.constructor : target.constructor;
-}

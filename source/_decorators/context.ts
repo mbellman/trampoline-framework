@@ -1,5 +1,5 @@
-import { DecoratorTarget } from '../Types/decorator-types';
-import { forMethodsOnObject } from '../Internals/object-utils';
+import { DecoratorTarget } from '../types/decorator-types';
+import { forMethodsOnObject } from '../internals/object-utils';
 
 /**
  * Returns a property descriptor for a class prototype method which

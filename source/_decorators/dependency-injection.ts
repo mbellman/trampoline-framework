@@ -1,10 +1,10 @@
-import { createNormalizedDecorator } from '../Internals/decorator-utils';
-import { DecoratorFactory, DecoratorTarget } from '../Types/decorator-types';
-import { forMethodsOnObject } from '../Internals/object-utils';
-import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../Internals/dependency-injection-utils';
-import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../Internals/reflection-utils';
-import { IConstructable, Extension, Constructor, Method } from '../Types/standard-types';
-import { toArray } from '../Internals/array-utils';
+import { Constructor, Extension, IConstructable, Method } from '../types/standard-types';
+import { createNormalizedDecorator } from '../internals/decorator-utils';
+import { DecoratorFactory, DecoratorTarget } from '../types/decorator-types';
+import { forMethodsOnObject } from '../internals/object-utils';
+import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../internals/dependency-injection-utils';
+import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../internals/reflection-utils';
+import { toArray } from '../internals/array-utils';
 
 const CONSTRUCTOR_METHOD_ID = '__constructor__';
 

@@ -1,6 +1,6 @@
-import { createDecorator } from '../../Internals/decorator-utils';
-import { DecoratorFactory, DecoratorTarget } from '../../Types/decorator-types';
-import { IConstructable, Method } from '../../Types/standard-types';
+import { createDecorator } from '../../internals/decorator-utils';
+import { DecoratorFactory, DecoratorTarget } from '../../types/decorator-types';
+import { IConstructable, Method } from '../../types/standard-types';
 
 /**
  * Takes a property descriptor and returns it in a non-writable,
