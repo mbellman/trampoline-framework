@@ -80,48 +80,50 @@ function enableAutowirableParameterChecks (
  * instances on construction.
  *
  * ```
- * @Wired class Consumer {
+ * @Wired class DAO {
  *   @Autowired() public service: Service;
  * }
  *
- * @Wired class Consumer2 {
+ * @Wired class DAO {
  *   public fetch (@Autowired('route/to/api.svc') service?: Service): {
  *     return service.fetch();
  *   }
  * }
  * ```
  */
-export const Autowired: DecoratorFactory<PropertyDecorator & ParameterDecorator> = (
+export function Autowired (
   ...constructorArgs: any[]
-) => createNormalizedDecorator(
-  (target: DecoratorTarget, propertyKey: string | symbol, parameterIndex?: number) => {
-    const { prototype } = target as Function;
+): PropertyDecorator & ParameterDecorator {
+  return createNormalizedDecorator(
+    (target: DecoratorTarget, propertyKey: string | symbol, parameterIndex?: number) => {
+      const { prototype } = target as Function;
 
-    if (typeof parameterIndex === 'number') {
-      // Parameter decorator
-      const isConstructorParameter = !propertyKey;
-      const reflectTarget = isConstructorParameter ? target : prototype;
-      const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
-      const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
+      if (typeof parameterIndex === 'number') {
+        // Parameter decorator
+        const isConstructorParameter = !propertyKey;
+        const reflectTarget = isConstructorParameter ? target : prototype;
+        const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
+        const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
 
-      saveAutowirableParameter(target, {
-        type: parameterTypes[parameterIndex],
-        constructorArgs,
-        methodName,
-        parameterIndex
-      });
-    } else {
-      // Property decorator
-      const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
+        saveAutowirableParameter(target, {
+          type: parameterTypes[parameterIndex],
+          constructorArgs,
+          methodName,
+          parameterIndex
+        });
+      } else {
+        // Property decorator
+        const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
 
-      saveAutowirableMember(target, {
-        type,
-        constructorArgs,
-        memberName: propertyKey as string
-      });
+        saveAutowirableMember(target, {
+          type,
+          constructorArgs,
+          memberName: propertyKey as string
+        });
+      }
     }
-  }
-);
+  );
+}
 
 /**
  * A class decorator which enables all @Autowired() properties

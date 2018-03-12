@@ -19,7 +19,7 @@ describe('@Final', () => {
       expect(() => A.apply(new NotA())).to.throw(Error);
     });
 
-    it('should otherwise preserve normal class behavior', () => {
+    it('should preserve normal class behavior', () => {
       @Final class A {
         private static staticMessage: string = 'Static message!';
         public message: string;
@@ -59,7 +59,19 @@ describe('@Final', () => {
       }).to.throw(Error);
     });
 
-    it('should otherwise preserve normal method behavior', () => {
+    it('should work on static methods', () => {
+      class A {
+        @Final public static method (): void { }
+      }
+
+      expect(() => {
+        class B extends A {
+          public static method (): void { }
+        }
+      }).to.throw(Error);
+    });
+
+    it('should preserve normal method behavior', () => {
       class A {
         public count: number = 0;
 

@@ -54,7 +54,9 @@ function createFilteredObjectPropertyIterator <T>(
  *
  * @internal
  */
-export function clone <T>(object: T): T {
+export function clone <T>(
+  object: T
+): T {
   return JSON.parse(JSON.stringify(object));
 }
 

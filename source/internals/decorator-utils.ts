@@ -24,9 +24,11 @@ function normalizeTargetToConstructor (
  *
  * @internal
  */
-export const createDecorator = <D extends Decorator = Decorator>(
+export function createDecorator <D extends Decorator = Decorator>(
   decorator: Decorator
-): D => decorator as D;
+): D {
+  return decorator as D;
+}
 
 /**
  * Returns a wrapped decorator function which forwards a normalized
@@ -36,13 +38,15 @@ export const createDecorator = <D extends Decorator = Decorator>(
  *
  * @internal
  */
-export const createNormalizedDecorator = <D extends Decorator = Decorator>(
+export function createNormalizedDecorator <D extends Decorator = Decorator>(
   decorator: Decorator,
   normalizer: Callback<any, DecoratorTarget> = normalizeTargetToConstructor,
-): D => createDecorator<D>(
-  (target: DecoratorTarget, ...args: any[]) => {
-    const normalizedTarget = normalizer(target as Function);
+): D {
+  return createDecorator<D>(
+    (target: DecoratorTarget, ...args: any[]) => {
+      const normalizedTarget = normalizer(target as Function);
 
-    return decorator.call(null, normalizedTarget, ...args);
-  }
-);
+      return decorator.call(null, normalizedTarget, ...args);
+    }
+  );
+}

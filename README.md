@@ -7,8 +7,6 @@ A TypeScript framework for making me feel great about having developed a framewo
 * - @PreventDefault
 * - @StopPropagation
 * - @Unfinished
-* Extensible
-* - Singleton
 
 # API
 Coming soon!
