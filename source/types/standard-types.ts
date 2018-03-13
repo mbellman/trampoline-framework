@@ -18,7 +18,7 @@ export interface IConstructable<T = any> {
  * function, which can annotate the type of either an abstract or
  * a non-abstract class Constructor.
  */
-export type Constructor<T> = IConstructable<T> | Function & { prototype: T };
+export type Constructor<T = any> = IConstructable<T> | Function & { prototype: T };
 
 /**
  * An object with at least the type signature of T, and potentially

@@ -101,35 +101,32 @@ function enableAutowirableParameterChecks (
 export function Autowired (
   ...constructorArgs: any[]
 ): PropertyDecorator & ParameterDecorator {
-  return createNormalizedDecorator(
-    (target: DecoratorTarget, propertyKey: string | symbol, parameterIndex?: number) => {
-      const { prototype } = target as Function;
+  return createNormalizedDecorator({
+    name: 'Autowired',
+    property: (target: Function, propertyKey: string | symbol) => {
+      const { prototype } = target;
+      const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
 
-      if (typeof parameterIndex === 'number') {
-        // Parameter decorator
-        const isConstructorParameter = !propertyKey;
-        const reflectTarget = isConstructorParameter ? target : prototype;
-        const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
-        const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
+      saveAutowirableMember(target, {
+        type,
+        constructorArgs,
+        memberName: propertyKey as string
+      });
+    },
+    parameter: (target: Function, propertyKey: string | symbol, parameterIndex: number) => {
+      const isConstructorParameter = !propertyKey;
+      const reflectTarget = isConstructorParameter ? target : target.prototype;
+      const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
+      const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
 
-        saveAutowirableParameter(target, {
-          type: parameterTypes[parameterIndex],
-          constructorArgs,
-          methodName,
-          parameterIndex
-        });
-      } else {
-        // Property decorator
-        const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
-
-        saveAutowirableMember(target, {
-          type,
-          constructorArgs,
-          memberName: propertyKey as string
-        });
-      }
+      saveAutowirableParameter(target, {
+        type: parameterTypes[parameterIndex],
+        constructorArgs,
+        methodName,
+        parameterIndex
+      });
     }
-  );
+  });
 }
 
 /**
@@ -137,13 +134,13 @@ export function Autowired (
  * or method parameters to be autowired at instantiation.
  *
  * ```
- * @Wired class A {
- * }
+ * @Wired class A { }
  * ```
  */
-export const Wired = createNormalizedDecorator<ClassDecorator>(
-  (target: DecoratorTarget): IConstructable => {
-    enableAutowirableParameterChecks(target as Function);
+export const Wired = createNormalizedDecorator<ClassDecorator>({
+  name: 'Wired',
+  class: (target: Function): IConstructable => {
+    enableAutowirableParameterChecks(target);
 
     const autowirableConstructorParameters = getAutowirableParameters(target)
       .filter(({ methodName }) => methodName === CONSTRUCTOR_METHOD_ID);
@@ -161,4 +158,4 @@ export const Wired = createNormalizedDecorator<ClassDecorator>(
       }
     };
   }
-);
+});

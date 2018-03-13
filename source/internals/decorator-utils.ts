@@ -1,6 +1,20 @@
-import { Callback, IConstructable } from '../types/standard-types';
-import { Decorator, DecoratorTarget } from '../types/decorator-types';
+import { Callback, IConstructable, Method } from '../types/standard-types';
+import { Decorator, DecoratorTarget, NormalizedClassDecorator, NormalizedMethodDecorator, NormalizedParameterDecorator, NormalizedPropertyDecorator } from '../types/decorator-types';
+import { hasValue } from './type-utils';
 
+/**
+ * Calls {decorator} with provided arguments in a non-typesafe fashion.
+ * Necessary to allow dynamic decorator calls with dynamic parameters,
+ * only by module internals, to circumvent type incompatibilities.
+ *
+ * @internal
+ */
+function callDecorator (
+  decorator: Function,
+  ...args: any[]
+): void {
+  return decorator.apply(null, args);
+}
 /**
  * Normalizes a decorator {target} parameter to its constructor function.
  *
@@ -15,6 +29,53 @@ function normalizeTargetToConstructor (
 }
 
 /**
+ * @internal
+ */
+function createConfiguredDecorator (
+  {
+    name,
+    class: classDecorator,
+    method: methodDecorator,
+    property: propertyDecorator,
+    parameter: parameterDecorator
+  }: IDecoratorConfiguration
+): Decorator {
+  return (target: DecoratorTarget, propertyKey?: string | symbol, propertyDescriptorOrParameterIndex?: PropertyDescriptor | number) => {
+    const resolvedDecorator = (
+      !hasValue(propertyKey) && !hasValue(propertyDescriptorOrParameterIndex)
+        ? classDecorator :
+      hasValue(propertyDescriptorOrParameterIndex) && typeof propertyDescriptorOrParameterIndex !== 'number'
+        ? methodDecorator :
+      typeof propertyDescriptorOrParameterIndex === 'number'
+        ? parameterDecorator :
+      !hasValue(propertyDescriptorOrParameterIndex)
+        ? propertyDecorator :
+      null
+    );
+
+    if (resolvedDecorator) {
+      return callDecorator(resolvedDecorator, target, propertyKey, propertyDescriptorOrParameterIndex);
+    } else {
+      throw new Error(`Invalid binding by decorator @${name}! Arguments: [ ${target}, ${propertyKey}, ${propertyDescriptorOrParameterIndex} ]`);
+    }
+  };
+}
+
+/**
+ * Represents a configuration object to provide to createDecorator() or
+ * createNormalizedDecorator().
+ *
+ * @internal
+ */
+export interface IDecoratorConfiguration {
+  name: string;
+  class?: ClassDecorator | NormalizedClassDecorator;
+  method?: MethodDecorator | NormalizedMethodDecorator;
+  property?: PropertyDecorator | NormalizedPropertyDecorator;
+  parameter?: ParameterDecorator | NormalizedParameterDecorator;
+}
+
+/**
  * Returns a decorator function typecast to the provided generic
  * type parameter, which defaults to Decorator.
  *
@@ -25,28 +86,30 @@ function normalizeTargetToConstructor (
  * @internal
  */
 export function createDecorator <D extends Decorator = Decorator>(
-  decorator: Decorator
+  decoratorConfiguration: IDecoratorConfiguration
 ): D {
-  return decorator as D;
+  return createConfiguredDecorator(decoratorConfiguration) as D;
 }
 
 /**
- * Returns a wrapped decorator function which forwards a normalized
- * target value to the provided {decorator}. An optional normalizer
- * function can be provided instead of the default, which normalizes
- * the target to its original constructor function.
+ * Returns a wrapped decorator function which forwards a normalized target
+ * value to the provided decorator functions on a {decoratorConfiguration}.
+ * An optional normalizer function can be provided instead of the default,
+ * which normalizes the target to its original constructor function.
  *
  * @internal
  */
 export function createNormalizedDecorator <D extends Decorator = Decorator>(
-  decorator: Decorator,
+  decoratorConfiguration: IDecoratorConfiguration,
   normalizer: Callback<any, DecoratorTarget> = normalizeTargetToConstructor,
 ): D {
-  return createDecorator<D>(
-    (target: DecoratorTarget, ...args: any[]) => {
-      const normalizedTarget = normalizer(target as Function);
+  const decorator = createDecorator<D>(decoratorConfiguration);
 
-      return decorator.call(null, normalizedTarget, ...args);
-    }
-  );
+  const normalizedDecorator = (target: DecoratorTarget, ...args: any[]) => {
+    const normalizedTarget = normalizer(target as Function);
+
+    return callDecorator(decorator, normalizedTarget, ...args);
+  };
+
+  return normalizedDecorator as D;
 }

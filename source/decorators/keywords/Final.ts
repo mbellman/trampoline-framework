@@ -26,7 +26,7 @@ function createFinalPropertyDescriptor (
 function createFinalClass (
   target: IConstructable
 ): IConstructable {
-  class FinalClass extends (target as IConstructable) {
+  class FinalClass extends target {
     public constructor (...args: any[]) {
       super(...args);
 
@@ -52,13 +52,12 @@ function createFinalClass (
 }
 
 /**
- * A class and method decorator which prevents extension and overriding,
- * respectively.
+ * A class and class method decorator which prevents extension and
+ * subclass overrides, respectively.
  *
  * @example 1:
  * ```
- * @Final class A {
- * }
+ * @Final class A { }
  *
  * // Throws Error in strict mode
  * class B extends A { }
@@ -79,14 +78,12 @@ function createFinalClass (
  * }
  * ```
  */
-export const Final = createDecorator<ClassDecorator & MethodDecorator>(
-  (target: DecoratorTarget, propertyKey?: string | symbol, propertyDescriptor?: PropertyDescriptor) => {
-    if (propertyKey && propertyDescriptor) {
-      // Method decorator
-      return createFinalPropertyDescriptor(propertyDescriptor);
-    } else {
-      // Class decorator
-      return createFinalClass(target as IConstructable);
-    }
+export const Final = createDecorator<ClassDecorator & MethodDecorator>({
+  name: 'Final',
+  class: (target: Function) => {
+    return createFinalClass(target as IConstructable);
+  },
+  method: (target: Object, propertyKey: string | symbol, propertyDescriptor: PropertyDescriptor) => {
+    return createFinalPropertyDescriptor(propertyDescriptor);
   }
-);
+});

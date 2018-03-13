@@ -4,9 +4,11 @@ A TypeScript framework for making me feel great about having developed a framewo
 # TODO
 
 * Decorators:
+* - @Run
+* - @Repeat()
 * - @PreventDefault
 * - @StopPropagation
-* - @Unfinished
+* - @Unfinished()
 
 # API
 Coming soon!
