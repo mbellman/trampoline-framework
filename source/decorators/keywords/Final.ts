@@ -80,10 +80,10 @@ function createFinalClass (
  */
 export const Final = createDecorator<ClassDecorator & MethodDecorator>({
   name: 'Final',
-  class: (target: Function) => {
+  classDecorator: (target: Function) => {
     return createFinalClass(target as IConstructable);
   },
-  method: (target: Object, propertyKey: string | symbol, propertyDescriptor: PropertyDescriptor) => {
+  methodDecorator: (target: Object, propertyKey: string | symbol, propertyDescriptor: PropertyDescriptor) => {
     return createFinalPropertyDescriptor(propertyDescriptor);
   }
 });

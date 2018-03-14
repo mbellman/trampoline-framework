@@ -34,10 +34,10 @@ function normalizeTargetToConstructor (
 function createConfiguredDecorator (
   {
     name,
-    class: classDecorator,
-    method: methodDecorator,
-    property: propertyDecorator,
-    parameter: parameterDecorator
+    classDecorator,
+    methodDecorator,
+    propertyDecorator,
+    parameterDecorator
   }: IDecoratorConfiguration
 ): Decorator {
   return (target: DecoratorTarget, propertyKey?: string | symbol, propertyDescriptorOrParameterIndex?: PropertyDescriptor | number) => {
@@ -46,10 +46,10 @@ function createConfiguredDecorator (
         ? classDecorator :
       hasValue(propertyDescriptorOrParameterIndex) && typeof propertyDescriptorOrParameterIndex !== 'number'
         ? methodDecorator :
-      typeof propertyDescriptorOrParameterIndex === 'number'
-        ? parameterDecorator :
       !hasValue(propertyDescriptorOrParameterIndex)
         ? propertyDecorator :
+      typeof propertyDescriptorOrParameterIndex === 'number'
+        ? parameterDecorator :
       null
     );
 
@@ -69,10 +69,10 @@ function createConfiguredDecorator (
  */
 export interface IDecoratorConfiguration {
   name: string;
-  class?: ClassDecorator | NormalizedClassDecorator;
-  method?: MethodDecorator | NormalizedMethodDecorator;
-  property?: PropertyDecorator | NormalizedPropertyDecorator;
-  parameter?: ParameterDecorator | NormalizedParameterDecorator;
+  classDecorator?: ClassDecorator | NormalizedClassDecorator;
+  methodDecorator?: MethodDecorator | NormalizedMethodDecorator;
+  propertyDecorator?: PropertyDecorator | NormalizedPropertyDecorator;
+  parameterDecorator?: ParameterDecorator | NormalizedParameterDecorator;
 }
 
 /**

@@ -4,7 +4,48 @@ import 'reflect-metadata';
 /**
  * @internal
  */
-export type MetaDataGetter<T> = (
+function createOwnMetadataGetter <T>(
+  key: string | symbol,
+  defaultMetadata?: T[]
+): MetadataGetter<T> {
+  return (target: any, propertyKey?: string | symbol) => {
+    const metaData = propertyKey
+      ? Reflect.getOwnMetadata(key, target, propertyKey)
+      : Reflect.getOwnMetadata(key, target);
+
+    return metaData || clone(defaultMetadata);
+  };
+}
+
+/**
+ * @internal
+ */
+function createMetadataDefiner <T>(
+  key: string | symbol
+): MetadataDefiner<T> {
+  return (target: any, metaData: T) => Reflect.defineMetadata(key, metaData, target);
+}
+
+/**
+ * @internal
+ */
+function createMetadataAdder <T>(
+  get: MetadataGetter<T[]>,
+  define: MetadataDefiner<T[]>
+): MetadataDefiner<T> {
+  return (target: any, item: T) => {
+    const metaData: T[] = get(target) || [];
+
+    metaData.push(item);
+
+    define(target, metaData);
+  };
+}
+
+/**
+ * @internal
+ */
+export type MetadataGetter<T> = (
   target: any,
   propertyKey?: string | symbol
 ) => T;
@@ -12,7 +53,7 @@ export type MetaDataGetter<T> = (
 /**
  * @internal
  */
-export type MetaDataDefiner<T> = (
+export type MetadataDefiner<T> = (
   target: any,
   metaData: T
 ) => void;
@@ -20,26 +61,27 @@ export type MetaDataDefiner<T> = (
 /**
  * @internal
  */
-export function createOwnMetadataGetter <T>(
-  key: string | symbol,
-  defaultData?: T
-): MetaDataGetter<T> {
-  return (target: any, propertyKey?: string | symbol) => {
-    const metaData = propertyKey
-      ? Reflect.getOwnMetadata(key, target, propertyKey)
-      : Reflect.getOwnMetadata(key, target);
-
-    return metaData || clone(defaultData);
-  };
+export interface IMetadataStore<T> {
+  get: MetadataGetter<T[]>;
+  define: MetadataDefiner<T[]>;
+  add: MetadataDefiner<T>;
 }
 
 /**
  * @internal
  */
-export function createMetadataDefiner <T>(
+export function createMetadataStore <T>(
   key: string | symbol
-): MetaDataDefiner<T> {
-  return (target: any, metaData: T) => Reflect.defineMetadata(key, metaData, target);
+): IMetadataStore<T> {
+  const get = createOwnMetadataGetter<T[]>(key, []);
+  const define = createMetadataDefiner<T[]>(key);
+  const add = createMetadataAdder(get, define);
+
+  return {
+    get,
+    define,
+    add
+  };
 }
 
 /**

@@ -1,10 +1,33 @@
 import { Constructor, Extension, IConstructable, Method } from '../types/standard-types';
+import { createMetadataStore, getReflectedMethodParameterTypes, getReflectedPropertyType } from '../internals/reflection-utils';
 import { createNormalizedDecorator } from '../internals/decorator-utils';
 import { DecoratorFactory, DecoratorTarget } from '../types/decorator-types';
 import { forMethodsOnObject } from '../internals/object-utils';
-import { getAutowirableMembers, getAutowirableParameters, IAutowirableParameter, saveAutowirableMember, saveAutowirableParameter } from '../internals/dependency-injection-utils';
-import { getReflectedMethodParameterTypes, getReflectedPropertyType } from '../internals/reflection-utils';
+import { hasValue } from '../internals/type-utils';
 import { toArray } from '../internals/array-utils';
+
+/**
+ * @internal
+ */
+interface IAutowirable {
+  type: IConstructable;
+  constructorArgs: any[];
+}
+
+/**
+ * @internal
+ */
+interface IAutowirableMember extends IAutowirable {
+  memberName: string;
+}
+
+/**
+ * @internal
+ */
+interface IAutowirableParameter extends IAutowirable {
+  methodName: string;
+  parameterIndex: number;
+}
 
 /**
  * A special ID to refer to the constructor method when saving autowirable
@@ -14,6 +37,32 @@ import { toArray } from '../internals/array-utils';
  * @internal
  */
 const CONSTRUCTOR_METHOD_ID = '__constructor__';
+
+/**
+ * @internal
+ */
+const AUTOWIRABLE_MEMBERS_KEY = Symbol('autowirable-members');
+
+/**
+ * @internal
+ */
+const AUTOWIRABLE_PARAMETERS_KEY = Symbol('autowirable-parameters');
+
+/**
+ * @internal
+ */
+const {
+  get: getAutowirableMembers,
+  add: addAutowirableMember
+} = createMetadataStore<IAutowirableMember>(AUTOWIRABLE_MEMBERS_KEY);
+
+/**
+ * @internal
+ */
+const {
+  get: getAutowirableParameters,
+  add: addAutowirableParameter
+} = createMetadataStore<IAutowirableParameter>(AUTOWIRABLE_PARAMETERS_KEY);
 
 /**
  * Returns an array of arguments with autowired values. The provided
@@ -100,26 +149,26 @@ function enableAutowirableParameterChecks (
  */
 export function Autowired (
   ...constructorArgs: any[]
-): PropertyDecorator & ParameterDecorator {
-  return createNormalizedDecorator({
+) {
+  return createNormalizedDecorator<PropertyDecorator & ParameterDecorator>({
     name: 'Autowired',
-    property: (target: Function, propertyKey: string | symbol) => {
+    propertyDecorator: (target: Function, propertyKey: string | symbol) => {
       const { prototype } = target;
       const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
 
-      saveAutowirableMember(target, {
+      addAutowirableMember(target, {
         type,
         constructorArgs,
         memberName: propertyKey as string
       });
     },
-    parameter: (target: Function, propertyKey: string | symbol, parameterIndex: number) => {
-      const isConstructorParameter = !propertyKey;
+    parameterDecorator: (target: Function, propertyKey: string | symbol, parameterIndex: number) => {
+      const isConstructorParameter = !hasValue(propertyKey);
       const reflectTarget = isConstructorParameter ? target : target.prototype;
       const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
       const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
 
-      saveAutowirableParameter(target, {
+      addAutowirableParameter(target, {
         type: parameterTypes[parameterIndex],
         constructorArgs,
         methodName,
@@ -131,7 +180,8 @@ export function Autowired (
 
 /**
  * A class decorator which enables all @Autowired() properties
- * or method parameters to be autowired at instantiation.
+ * or method parameters to be autowired at instantiation or when
+ * the applicable method is called, respectively.
  *
  * ```
  * @Wired class A { }
@@ -139,7 +189,7 @@ export function Autowired (
  */
 export const Wired = createNormalizedDecorator<ClassDecorator>({
   name: 'Wired',
-  class: (target: Function): IConstructable => {
+  classDecorator: (target: Function): IConstructable => {
     enableAutowirableParameterChecks(target);
 
     const autowirableConstructorParameters = getAutowirableParameters(target)

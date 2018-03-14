@@ -54,14 +54,14 @@ function createBoundMethodPropertyDescriptor (
  */
 export const Bound = createDecorator<ClassDecorator & MethodDecorator>({
   name: 'Bound',
-  class: ({ prototype }: Function) => {
+  classDecorator: ({ prototype }: Function) => {
     forMethodsOnObject(prototype, (method, methodName) => {
       const propertyDescriptor = createBoundMethodPropertyDescriptor(method, methodName);
 
       Object.defineProperty(prototype, methodName, propertyDescriptor);
     });
   },
-  method: (target: Object, propertyKey: string | symbol, { value }: PropertyDescriptor) => {
+  methodDecorator: (target: Object, propertyKey: string | symbol, { value }: PropertyDescriptor) => {
     return createBoundMethodPropertyDescriptor(value, propertyKey as string);
   }
 });
