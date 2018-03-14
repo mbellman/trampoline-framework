@@ -7,6 +7,7 @@ case $bump in
     npm version $bump -m "Deploying %s"
     npm publish
     git push
+    git push origin --tags
     ;;
   *)
     echo "Invalid version bump!"
