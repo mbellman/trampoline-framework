@@ -54,19 +54,6 @@ function decorate (
 }
 
 /**
- * Calls {decorator} with provided arguments in a non-typesafe fashion.
- * Necessary to allow dynamic decorator calls with dynamic parameters,
- * only by module internals, to circumvent type incompatibilities.
- *
- * @internal
- */
-function callDecorator (
-  decorator: Function,
-  ...args: any[]
-): void {
-  return decorator.apply(null, args);
-}
-/**
  * Normalizes a decorator {target} parameter to its constructor function.
  *
  * @internal
@@ -105,7 +92,7 @@ function createConfiguredDecorator (
     );
 
     if (resolvedDecorator) {
-      return callDecorator(resolvedDecorator, target, propertyKey, propertyDescriptorOrParameterIndex);
+      return resolvedDecorator.call(null, target, propertyKey, propertyDescriptorOrParameterIndex);
     } else {
       throw new Error(`Invalid binding by decorator @${name}! Arguments: [ ${target}, ${propertyKey}, ${propertyDescriptorOrParameterIndex} ]`);
     }
@@ -159,7 +146,7 @@ export function createNormalizedDecorator <D extends Decorator = Decorator>(
   const normalizedDecorator = (target: DecoratorTarget, ...args: any[]) => {
     const normalizedTarget = normalizer(target as Function);
 
-    return callDecorator(decorator, normalizedTarget, ...args);
+    return decorator.call(null, normalizedTarget, ...args);
   };
 
   return normalizedDecorator as D;
@@ -168,8 +155,8 @@ export function createNormalizedDecorator <D extends Decorator = Decorator>(
 /**
  * @internal
  */
-export function composeDecorators <D extends Decorator = Decorator>(
-  ...decorators: Function[]
+export function composeDecorators <D extends Decorator>(
+  ...decorators: D[]
 ): D {
   const composedDecorator = (...args: any[]) => {
     return decorate.call(null, decorators, ...args);
