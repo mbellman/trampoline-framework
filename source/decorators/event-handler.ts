@@ -42,9 +42,10 @@ function createEventHandlerDecorator (
  * }
  * ```
  */
-export const PreventDefault = createEventHandlerDecorator('PreventDefault', (e: Event) => {
-  e.preventDefault();
-});
+export const PreventDefault = createEventHandlerDecorator(
+  'PreventDefault',
+  (e: Event) => e.preventDefault()
+);
 
 /**
  * Stops event propagation from decorated class method event handlers.
@@ -56,9 +57,10 @@ export const PreventDefault = createEventHandlerDecorator('PreventDefault', (e: 
  * }
  * ```
  */
-export const StopPropagation = createEventHandlerDecorator('StopPropagation', (e: Event) => {
-  e.stopPropagation();
-});
+export const StopPropagation = createEventHandlerDecorator(
+  'StopPropagation',
+  (e: Event) => e.stopPropagation()
+);
 
 /**
  * Composes @StopPropagation and @PreventDefault into a single decorator.
