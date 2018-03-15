@@ -18,6 +18,7 @@
     "no-unused-variable": true,
     "object-literal-sort-keys": [ false ],
     "one-line": false,
+    "object-literal-shorthand": false,
     "only-arrow-functions": false,
     "ordered-imports": [ false ],
     "prefer-for-of": false,

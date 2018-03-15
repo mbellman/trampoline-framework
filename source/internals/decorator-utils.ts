@@ -3,6 +3,57 @@ import { Decorator, DecoratorTarget, NormalizedClassDecorator, NormalizedMethodD
 import { hasValue } from './type-utils';
 
 /**
+ * A recreation of the __decorate() function which TypeScript generates
+ * at compilation. Having this available at design-time allows multiple
+ * decorators to be chained together, providing an easy composition
+ * solution for composeDecorators().
+ *
+ * @internal
+ */
+function decorate (
+  decorators: Function[],
+  target: DecoratorTarget,
+  key?: string,
+  arg3?: PropertyDescriptor | number
+): any {
+  const totalArguments = arguments.length;
+  const isDecoratingClass = totalArguments < 3;
+  const isDecoratingPropertyOrParameter = totalArguments > 3;
+
+  let accumulatedResult = (
+    isDecoratingClass
+      ? target :
+    arg3 === null
+      ? (arg3 = Object.getOwnPropertyDescriptor(target, key as string)) :
+    arg3
+  );
+
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") {
+    accumulatedResult = Reflect.decorate.call(Reflect, decorators, target, key, arg3);
+  } else {
+    accumulatedResult =
+      decorators.reverse()
+        .reduce((acc, decorator) => {
+          const result = (
+            isDecoratingClass
+              ? decorator(accumulatedResult) :
+            isDecoratingPropertyOrParameter
+              ? decorator(target, key, accumulatedResult) :
+            decorator(target, key)
+          );
+
+          return result || acc;
+        });
+  }
+
+  if (isDecoratingPropertyOrParameter && accumulatedResult) {
+    return Object.defineProperty(target, key as string, accumulatedResult);
+  }
+
+  return accumulatedResult;
+}
+
+/**
  * Calls {decorator} with provided arguments in a non-typesafe fashion.
  * Necessary to allow dynamic decorator calls with dynamic parameters,
  * only by module internals, to circumvent type incompatibilities.
@@ -112,4 +163,17 @@ export function createNormalizedDecorator <D extends Decorator = Decorator>(
   };
 
   return normalizedDecorator as D;
+}
+
+/**
+ * @internal
+ */
+export function composeDecorators <D extends Decorator = Decorator>(
+  ...decorators: Function[]
+): D {
+  const composedDecorator = (...args: any[]) => {
+    return decorate.call(null, decorators, ...args);
+  };
+
+  return composedDecorator as D;
 }
