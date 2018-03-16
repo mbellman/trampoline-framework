@@ -18,7 +18,7 @@ function decorate (
 ): any {
   const totalArguments = arguments.length;
   const isDecoratingClass = totalArguments < 3;
-  const isDecoratingPropertyOrParameter = totalArguments > 3;
+  const isDecoratingMethodOrParameter = totalArguments > 3;
 
   let accumulatedResult = (
     isDecoratingClass
@@ -37,7 +37,7 @@ function decorate (
           const result = (
             isDecoratingClass
               ? decorator(accumulatedResult) :
-            isDecoratingPropertyOrParameter
+            isDecoratingMethodOrParameter
               ? decorator(target, key, accumulatedResult) :
             decorator(target, key)
           );
@@ -46,7 +46,7 @@ function decorate (
         });
   }
 
-  if (isDecoratingPropertyOrParameter && accumulatedResult) {
+  if (isDecoratingMethodOrParameter && accumulatedResult) {
     return Object.defineProperty(target, key as string, accumulatedResult);
   }
 
@@ -94,7 +94,7 @@ function createConfiguredDecorator (
     if (resolvedDecorator) {
       return resolvedDecorator.call(null, target, propertyKey, propertyDescriptorOrParameterIndex);
     } else {
-      throw new Error(`Invalid binding by decorator @${name}! Arguments: [ ${target}, ${propertyKey}, ${propertyDescriptorOrParameterIndex} ]`);
+      throw new Error(`Invalid binding by decorator @${name}! Received arguments: [ ${target}, ${propertyKey}, ${propertyDescriptorOrParameterIndex} ]`);
     }
   };
 }
@@ -130,7 +130,7 @@ export function createDecorator <D extends Decorator = Decorator>(
 }
 
 /**
- * Returns a wrapped decorator function which forwards a normalized target
+ * Returns a wrapped decorator function which passes a normalized target
  * value to the provided decorator functions on a {decoratorConfiguration}.
  * An optional normalizer function can be provided instead of the default,
  * which normalizes the target to its original constructor function.

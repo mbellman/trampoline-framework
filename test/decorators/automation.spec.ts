@@ -40,7 +40,7 @@ describe('Automation Decorators', () => {
 
         @Poll(100)
         public countToFive (): void {
-          if (this.count <= 5) {
+          if (this.count < 5) {
             this.count++;
           }
         }
@@ -60,7 +60,7 @@ describe('Automation Decorators', () => {
 
         @Poll(100)
         public static staticCountToFive (): void {
-          if (A.count <= 5) {
+          if (A.count < 5) {
             A.count++;
           }
         }

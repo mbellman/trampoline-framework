@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "yarn test && tsc",
-    "test": "nyc mocha --exit",
+    "test": "nyc mocha",
     "checkin": "sh ./checkin.sh",
     "deploy": "sh ./deploy.sh"
   },

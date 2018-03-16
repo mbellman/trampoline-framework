@@ -61,7 +61,11 @@ export const Bound = createDecorator<ClassDecorator & MethodDecorator>({
       Object.defineProperty(prototype, methodName, propertyDescriptor);
     });
   },
-  methodDecorator: (target: Object, propertyKey: string | symbol, { value }: PropertyDescriptor) => {
+  methodDecorator: (target: DecoratorTarget, propertyKey: string | symbol, { value }: PropertyDescriptor) => {
+    if (target.prototype) {
+      throw new Error(`@Bound decoration of static methods not allowed! [ '${target.name}'.'${propertyKey}'() ]`);
+    }
+
     return createBoundMethodPropertyDescriptor(value, propertyKey as string);
   }
 });

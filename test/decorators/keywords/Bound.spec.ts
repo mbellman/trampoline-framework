@@ -16,14 +16,12 @@ describe('@Bound', () => {
     const { addOne } = a;
 
     addOne();
-    addOne();
-    a.addOne();
     a.addOne();
 
-    expect(a.count).to.equal(4);
+    expect(a.count).to.equal(2);
   });
 
-  it('should bind the context of all methods of a decorated class', () => {
+  it('should bind the context of all instance methods of decorated classes', () => {
     @Bound class A {
       public count: number = 0;
 
@@ -48,5 +46,13 @@ describe('@Bound', () => {
     addThree();
 
     expect(a.count).to.equal(6);
+  });
+
+  it('should throw errors on decorated static methods', () => {
+    expect(() => {
+      class A {
+        @Bound public static method (): void { }
+      }
+    }).to.throw(Error);
   });
 });
