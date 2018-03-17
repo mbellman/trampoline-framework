@@ -35,9 +35,9 @@ function createBoundMethodPropertyDescriptor (
  * @example 1:
  * ```
  * @Bound class View {
- *   onButtonClick () { }
- *   onOptionClick () { }
- *   onLinkClick () { }
+ *   public onButtonClick (): void { }
+ *   public onOptionClick (): void { }
+ *   public onLinkClick (): void { }
  * }
  * ```
  *

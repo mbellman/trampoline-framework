@@ -13,9 +13,9 @@ are context-bound.
 
 ```typescript
 @Bound class View {
-  onButtonClick () { }
-  onOptionClick () { }
-  onLinkClick () { }
+  public onButtonClick (): void { }
+  public onOptionClick (): void { }
+  public onLinkClick (): void { }
 }
 ```
 
@@ -256,7 +256,7 @@ multiMap.forEach((values: number[], key: string, multiMap: MultiMap<string, numb
 multiMap.remove('hello', 2)
 multiMap.get('hello') // [ 1, 3 ]
 multiMap.remove('hello')
-multiMap.size() // 0
+multiMap.size // 0
 
 multiMap.put('hi', 1)
 multiMap.put('hi', 2)
@@ -264,5 +264,5 @@ multiMap.put('bye', 3)
 multiMap.put('bye', 4)
 multiMap.clear()
 
-multiMap.size() // 0
+multiMap.size // 0
 ```
