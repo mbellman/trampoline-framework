@@ -6,6 +6,9 @@
  * ```
  * class A extends Singleton { }
  *
+ * // Throws Error
+ * const a: A = new A();
+ *
  * const a: A = A.getInstance();
  * ```
  */

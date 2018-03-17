@@ -76,7 +76,12 @@ function callPolledMethods (
 }
 
 /**
- * @todo @description
+ * A class decorator which enables methods to be decorated
+ * with @Run() or @Poll().
+ *
+ * ```
+ * @Automated class A { }
+ * ```
  */
 export const Automated = createDecorator<ClassDecorator>({
   name: 'Automated',
@@ -102,7 +107,24 @@ export const Automated = createDecorator<ClassDecorator>({
 });
 
 /**
- * @todo @description
+ * A method decorator which runs decorated instance methods at class
+ * instantiation, and decorated static methods at runtime. Arguments
+ * can be provided to the decorator to call the targeting method with.
+ * Decorated methods must be on an @Automated class.
+ *
+ * ```
+ * @Automated class A {
+ *   @Run()
+ *   public init (): void { }
+ * }
+ *
+ * @Automated class B {
+ *   @Run(Date.now())
+ *   public static init (time: number): void {
+ *     // ...
+ *   }
+ * }
+ * ```
  */
 export function Run (
   ...args: any[]
@@ -119,7 +141,23 @@ export function Run (
 }
 
 /**
- * @todo @description
+ * A method decorator which repeatedly runs decorated instance methods
+ * at class instantiation, and decorated static methods at runtime. A
+ * polling interval, measured in milliseconds, can be specified as the
+ * decorator argument, which defaults to 1000. Decorated methods must
+ * be on an @Automated class.
+ *
+ * ```
+ * @Automated class A {
+ *   @Poll(500)
+ *   public check (): void { }
+ * }
+ *
+ * @Automated class B {
+ *   @Poll(100)
+ *   public static check (): void { }
+ * }
+ * ```
  */
 export function Poll (
   interval: number = 1000

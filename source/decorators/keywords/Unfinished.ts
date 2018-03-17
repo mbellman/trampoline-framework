@@ -4,16 +4,20 @@ import { forMethodsOnObject } from '../../internals/object-utils';
 import { IConstructable } from '../../types/standard-types';
 
 /**
- * Warns with {message} if one is provided.
+ * Warns with an optional developer-provided message passed along from an
+ * @Unfinished() decorator, and throws with a required internal error message.
  *
  * @internal
  */
-function warn (
-  message?: string
+function throwUnfinishedError (
+  errorMessage: string,
+  developerMessage?: string,
 ): void {
-  if (message) {
-    console.warn(message);
+  if (developerMessage) {
+    console.warn(developerMessage);
   }
+
+  throw new Error(errorMessage);
 }
 
 /**
@@ -26,21 +30,21 @@ function warn (
 function createUnfinishedMethodPropertyDescriptor (
   className: string,
   methodName: string,
-  message?: string
+  developerMessage?: string
 ): PropertyDescriptor {
   return {
     value: () => {
-      warn(`Invalid call to unfinished class '${className}' method '${methodName}'!`);
-      warn(message);
-
-      return null;
+      throwUnfinishedError(
+        `Invalid call to unfinished class '${className}' method '${methodName}'!`,
+        developerMessage
+      );
     }
   };
 }
 
 /**
  * Stubs decorated methods, or all instance and static methods on decorated
- * classes, with an optional warning message and a null return value.
+ * classes, with an optional warning message and a thrown Error.
  *
  * @example 1:
  * ```
@@ -61,26 +65,27 @@ function createUnfinishedMethodPropertyDescriptor (
  * ```
  */
 export function Unfinished (
-  message?: string
+  developerMessage?: string
 ): ClassDecorator & MethodDecorator {
   return createDecorator<ClassDecorator & MethodDecorator>({
     name: 'Unfinished',
     classDecorator: (target: Function) => {
-      const stubUnfinishedMethod = (method: Function, methodName: string, object: DecoratorTarget) => {
-        const unfinishedMethod = createUnfinishedMethodPropertyDescriptor(target.name, methodName, message);
+      // Only stub static methods; class construction will throw
+      // an Error and prevent actual instance creation
+      forMethodsOnObject(target, (method: Function, methodName: string, object: DecoratorTarget) => {
+        const unfinishedMethod = createUnfinishedMethodPropertyDescriptor(target.name, methodName, developerMessage);
 
         Object.defineProperty(object, methodName, unfinishedMethod);
-      };
-
-      forMethodsOnObject(target, stubUnfinishedMethod);
-      forMethodsOnObject(target.prototype, stubUnfinishedMethod);
+      });
 
       return class extends (target as IConstructable) {
         public constructor () {
           super();
 
-          warn(`Invalid construction of unfinished class ${target.name}!`);
-          warn(message);
+          throwUnfinishedError(
+            `Invalid construction of unfinished class '${target.name}!'`,
+            developerMessage
+          );
         }
       };
     },
@@ -88,7 +93,7 @@ export function Unfinished (
       const className = target.constructor.name;
       const methodName = propertyKey as string;
 
-      return createUnfinishedMethodPropertyDescriptor(className, methodName, message);
+      return createUnfinishedMethodPropertyDescriptor(className, methodName, developerMessage);
     }
   });
 }

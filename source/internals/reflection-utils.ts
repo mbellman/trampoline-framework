@@ -1,4 +1,5 @@
 import { clone } from '../internals/object-utils';
+import { Constructor } from '../types/standard-types';
 import 'reflect-metadata';
 
 /**
@@ -70,6 +71,15 @@ export interface IMetadataStore<T> {
 /**
  * @internal
  */
+export interface IClassTaxonomy {
+  name: string;
+  prototype: any;
+  parentName: string;
+}
+
+/**
+ * @internal
+ */
 export function createMetadataStore <T>(
   key: string | symbol
 ): IMetadataStore<T> {
@@ -102,4 +112,21 @@ export function getReflectedMethodParameterTypes (
   methodName: string | symbol
 ): any[] {
   return Reflect.getMetadata('design:paramtypes', target, methodName);
+}
+
+/**
+ * @internal
+ */
+export function getClassTaxonomy <T>(
+  classConstructor: Constructor
+): IClassTaxonomy {
+  const prototype = Object.getPrototypeOf(classConstructor);
+  const { name } = classConstructor;
+  const { name: parentName } = prototype;
+
+  return {
+    name,
+    prototype,
+    parentName
+  };
 }

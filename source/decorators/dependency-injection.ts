@@ -130,7 +130,8 @@ function enableAutowirableParameterChecks (
  * A property and parameter decorator which allows values to be autowired
  * (automatically provided with new instances) at class instantiation or
  * method call time. Classes which contain autowired properties or method
- * parameters must also be decorated with @Wired.
+ * parameters must also be decorated with @Wired. Right now, autowiring
+ * only works for instance properties or instance method parameters.
  *
  * Arguments can be provided to the decorator to be passed into autowired
  * instances on construction.

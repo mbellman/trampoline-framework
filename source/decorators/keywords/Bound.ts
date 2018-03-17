@@ -28,16 +28,16 @@ function createBoundMethodPropertyDescriptor (
 }
 
 /**
- * A class and class method decorator decorator which binds methods
- * to instance contexts. When applied to a class, all methods are
- * context-bound.
+ * A class and class method decorator decorator which binds instance
+ * methods to instance contexts. When applied to a class, all methods
+ * are context-bound.
  *
  * @example 1:
  * ```
- * @Bound class A {
- *   method1 () { }
- *   method2 () { }
- *   method3 () { }
+ * @Bound class View {
+ *   onButtonClick () { }
+ *   onOptionClick () { }
+ *   onLinkClick () { }
  * }
  * ```
  *
@@ -46,7 +46,7 @@ function createBoundMethodPropertyDescriptor (
  * class A {
  *   public prop: any;
  *
- *   @Bound public boundMethod (prop: any): void {
+ *   @Bound public assignProp (prop: any): void {
  *     this.prop = prop;
  *   }
  * }
