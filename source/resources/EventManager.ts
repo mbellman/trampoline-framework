@@ -10,8 +10,7 @@ export type EventHandler = Callback<any>;
 /**
  * A custom event handler container and dispatcher.
  */
-@Final
-export default class EventManager {
+@Final export default class EventManager {
   private _events: MultiMap<string, EventHandler> = new MultiMap();
 
   public off (event?: string, callback?: EventHandler): void {

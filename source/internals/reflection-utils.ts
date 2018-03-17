@@ -71,15 +71,6 @@ export interface IMetadataStore<T> {
 /**
  * @internal
  */
-export interface IClassTaxonomy {
-  name: string;
-  prototype: any;
-  parentName: string;
-}
-
-/**
- * @internal
- */
 export function createMetadataStore <T>(
   key: string | symbol
 ): IMetadataStore<T> {
@@ -117,16 +108,43 @@ export function getReflectedMethodParameterTypes (
 /**
  * @internal
  */
-export function getClassTaxonomy <T>(
-  classConstructor: Constructor
-): IClassTaxonomy {
-  const prototype = Object.getPrototypeOf(classConstructor);
-  const { name } = classConstructor;
-  const { name: parentName } = prototype;
+export function isInstanceMethod (
+  target: Function,
+  methodName: string | symbol
+): boolean {
+  return !!target.prototype[methodName];
+}
 
-  return {
-    name,
-    prototype,
-    parentName
-  };
+/**
+ * @internal
+ */
+export function hasInheritedInstanceMember (
+  target: Function,
+  methodName: string | symbol
+): boolean {
+  const prototype = Object.getPrototypeOf(target);
+
+  return !!(prototype.prototype && prototype.prototype[methodName]);
+}
+
+/**
+ * @internal
+ */
+export function isStaticMethod (
+  target: Function,
+  methodName: string | symbol
+): boolean {
+  return !!(target as any)[methodName];
+}
+
+/**
+ * @internal
+ */
+export function hasInheritedStaticMember (
+  target: Function,
+  methodName: string | symbol
+): boolean {
+  const prototype = Object.getPrototypeOf(target);
+
+  return !!prototype[methodName];
 }

@@ -1,6 +1,6 @@
 import { createNormalizedDecorator } from '../../internals/decorator-utils';
 import { DecoratorTarget } from '../../types/decorator-types';
-import { getClassTaxonomy } from '../../internals/reflection-utils';
+import { hasInheritedInstanceMember, hasInheritedStaticMember, isInstanceMethod, isStaticMethod } from '../../internals/reflection-utils';
 
 /**
  * A method decorator which merely labels a method as an implementation
@@ -18,10 +18,11 @@ import { getClassTaxonomy } from '../../internals/reflection-utils';
 export const Implements = createNormalizedDecorator<MethodDecorator>({
   name: 'Implements',
   methodDecorator: (target: DecoratorTarget, propertyKey: string | symbol) => {
-    const { prototype, name, parentName } = getClassTaxonomy(target);
+    const isInvalidInstanceImplementation = isInstanceMethod(target, propertyKey) && hasInheritedInstanceMember(target, propertyKey);
+    const isInvalidStaticImplementation = isStaticMethod(target, propertyKey) && hasInheritedStaticMember(target, propertyKey);
 
-    if (prototype[propertyKey] || prototype.prototype[propertyKey]) {
-      throw new Error(`Invalid @Implements on class '${name}' method '${propertyKey}': superclass '${parentName}' already implements '${propertyKey!}'`);
+    if (isInvalidInstanceImplementation || isInvalidStaticImplementation) {
+      throw new Error(`Class '${target.name}' cannot @Implement method '${propertyKey}': a superclass already implements '${propertyKey}'!`);
     }
   }
 });

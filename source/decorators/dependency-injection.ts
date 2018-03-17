@@ -4,7 +4,15 @@ import { createNormalizedDecorator } from '../internals/decorator-utils';
 import { DecoratorFactory, DecoratorTarget } from '../types/decorator-types';
 import { forMethodsOnObject } from '../internals/object-utils';
 import { hasValue } from '../internals/type-utils';
-import { toArray } from '../internals/array-utils';
+import { toArray, partition } from '../internals/array-utils';
+
+/**
+ * @internal
+ */
+enum MemberSide {
+  INSTANCE,
+  STATIC
+}
 
 /**
  * @internal
@@ -17,8 +25,9 @@ interface IAutowirable {
 /**
  * @internal
  */
-interface IAutowirableMember extends IAutowirable {
-  memberName: string;
+interface IAutowirableProperty extends IAutowirable {
+  propertyName: string;
+  side: MemberSide;
 }
 
 /**
@@ -41,7 +50,7 @@ const CONSTRUCTOR_METHOD_ID = '__constructor__';
 /**
  * @internal
  */
-const AUTOWIRABLE_MEMBERS_KEY = Symbol('autowirable-members');
+const AUTOWIRABLE_PROPERTIES_KEY = Symbol('autowirable-properties');
 
 /**
  * @internal
@@ -52,9 +61,9 @@ const AUTOWIRABLE_PARAMETERS_KEY = Symbol('autowirable-parameters');
  * @internal
  */
 const {
-  get: getAutowirableMembers,
-  add: addAutowirableMember
-} = createMetadataStore<IAutowirableMember>(AUTOWIRABLE_MEMBERS_KEY);
+  get: getAutowirableProperties,
+  add: addAutowirableProperty
+} = createMetadataStore<IAutowirableProperty>(AUTOWIRABLE_PROPERTIES_KEY);
 
 /**
  * @internal
@@ -104,26 +113,41 @@ function createWiredMethod (
 }
 
 /**
- * Loops over each method on a target constructor function's
- * prototype and overrides those with @Autowired() parameters
- * using createWiredMethod().
+ * Loops over each all of a target's instance-side and static-side
+ * methods and wires all which receive @Autowired() parameters.
  *
  * @internal
  */
-function enableAutowirableParameterChecks (
+function bindWiredMethods (
   target: Function
 ): void {
   const { prototype } = target;
   const allAutowirableParameters = getAutowirableParameters(target);
 
-  forMethodsOnObject(prototype, (method, targetMethodName) => {
+  const wireMethod = (method: Function, autowiredMethodName: string, wireTarget: any) => {
     const methodAutowirableParameters = allAutowirableParameters
-      .filter(({ methodName }) => methodName === targetMethodName);
+      .filter(({ methodName }) => methodName === autowiredMethodName);
 
     if (methodAutowirableParameters.length > 0) {
-      prototype[targetMethodName] = createWiredMethod(method, methodAutowirableParameters);
+      wireTarget[autowiredMethodName] = createWiredMethod(method, methodAutowirableParameters);
     }
-  });
+  };
+
+  forMethodsOnObject(target, wireMethod);
+  forMethodsOnObject(prototype, wireMethod);
+}
+
+/**
+ * @internal
+ */
+function autowireProperties (
+  target: any,
+  autowirableProperties: IAutowirableProperty[]
+): void {
+  autowirableProperties
+    .forEach(({ propertyName, type, constructorArgs }) => {
+      target[propertyName] = new type(...constructorArgs);
+    });
 }
 
 /**
@@ -155,17 +179,31 @@ export function Autowired (
     name: 'Autowired',
     propertyDecorator: (target: Function, propertyKey: string | symbol) => {
       const { prototype } = target;
-      const type: IConstructable = getReflectedPropertyType(prototype, propertyKey);
 
-      addAutowirableMember(target, {
+      // We can't reliably determine whether a property is instance-side
+      // or static-side before it's been set (for example, for declared
+      // properties), so we just have to try looking up type metadata on
+      // both {prototype} and {target}
+      const instancePropertyType = getReflectedPropertyType(prototype, propertyKey);
+      const staticPropertyType = getReflectedPropertyType(target, propertyKey);
+      const type: IConstructable = instancePropertyType || staticPropertyType;
+      const side = instancePropertyType ? MemberSide.INSTANCE : MemberSide.STATIC;
+
+      if (!type) {
+        throw new Error(`Invalid @Autowired() type for property '${propertyKey}' on class '${target.name}'!`);
+      }
+
+      addAutowirableProperty(target, {
         type,
         constructorArgs,
-        memberName: propertyKey as string
+        propertyName: propertyKey as string,
+        side
       });
     },
     parameterDecorator: (target: Function, propertyKey: string | symbol, parameterIndex: number) => {
       const isConstructorParameter = !hasValue(propertyKey);
-      const reflectTarget = isConstructorParameter ? target : target.prototype;
+      const isForStaticMethod = !!(target as any)[propertyKey];
+      const reflectTarget = isConstructorParameter || isForStaticMethod ? target : target.prototype;
       const parameterTypes: IConstructable[] = getReflectedMethodParameterTypes(reflectTarget, propertyKey);
       const methodName = isConstructorParameter ? CONSTRUCTOR_METHOD_ID : propertyKey as string;
 
@@ -191,21 +229,26 @@ export function Autowired (
 export const Wired = createNormalizedDecorator<ClassDecorator>({
   name: 'Wired',
   classDecorator: (target: Function): IConstructable => {
-    enableAutowirableParameterChecks(target);
+    const autowirableProperties = getAutowirableProperties(target);
+
+    const [
+      autowirableStaticProperties,
+      autowirableInstanceProperties
+    ] = partition(autowirableProperties, (({ side }) => side === MemberSide.STATIC));
 
     const autowirableConstructorParameters = getAutowirableParameters(target)
       .filter(({ methodName }) => methodName === CONSTRUCTOR_METHOD_ID);
 
-    return class extends (target as IConstructable) {
+    bindWiredMethods(target);
+    autowireProperties(target, autowirableStaticProperties);
+
+    return class WiredClass extends (target as IConstructable) {
       public constructor (...args: any[]) {
         const autowiredArgs = autowireArguments(arguments, autowirableConstructorParameters);
 
         super(...autowiredArgs);
 
-        getAutowirableMembers(target)
-          .forEach(({ memberName, type, constructorArgs }) => {
-            this[memberName] = new type(...constructorArgs);
-          });
+        autowireProperties(this, autowirableInstanceProperties);
       }
     };
   }

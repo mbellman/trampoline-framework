@@ -12,7 +12,7 @@ class A {
 
 describe('Dependency Injection Decorators', () => {
   describe('Property autowiring', () => {
-    it('should inject a new T instance into autowired properties on instantiation', () => {
+    it('should inject a new T instance into autowired instance properties on instantiation', () => {
       @Wired class B {
         @Autowired() public a: A;
       }
@@ -22,14 +22,27 @@ describe('Dependency Injection Decorators', () => {
       expect(b.a).to.be.an.instanceof(A);
     });
 
+    it('should inject a new T instance into autowired static properties at runtime', () => {
+      @Wired class B {
+        @Autowired('hello') public static a: A;
+      }
+
+      expect(B.a.input).to.equal('hello');
+    });
+
     it('Should pass the provided arguments to the autowired T instance', () => {
       @Wired class B {
         @Autowired('hello') public a: A;
       }
 
+      @Wired class StaticB {
+        @Autowired('goodbye') public static a: A;
+      }
+
       const b: B = new B();
 
       expect(b.a.input).to.equal('hello');
+      expect(StaticB.a.input).to.equal('goodbye');
     });
   });
 
@@ -38,35 +51,43 @@ describe('Dependency Injection Decorators', () => {
       @Wired class B {
         public a1: A;
         public a2: A;
+        public static staticA: A;
 
-        public constructor (@Autowired('hello') a: A) {
-          this.a1 = a;
+        public constructor (@Autowired('hello') a?: A) {
+          if (a) {
+            this.a1 = a;
+          }
         }
 
-        public method (@Autowired('goodbye') a: A) {
-          this.a2 = a;
+        public method (@Autowired('goodbye') a?: A) {
+          if (a) {
+            this.a2 = a;
+          }
+        }
+
+        public static staticMethod (@Autowired('hey') a?: A): void {
+          if (a) {
+            B.staticA = a;
+          }
         }
       }
 
-      class Factory<T> {
-        private _ctor: IConstructable<T>;
+      const b: B = new B();
 
-        public constructor (ctor: IConstructable<T>) {
-          this._ctor = ctor;
-        }
-
-        public create (...args: any[]): T {
-          return new this._ctor(...args);
-        }
-      }
-
-      const bFactory: Factory<B> = new Factory(B);
-      const b: B = bFactory.create();
-
-      b.method.call(b);
+      b.method();
+      B.staticMethod();
 
       expect(b.a1.input).to.equal('hello');
       expect(b.a2.input).to.equal('goodbye');
+      expect(B.staticA.input).to.equal('hey');
     });
+  });
+
+  it('should throw an error when trying to autowire a non-constructable type', () => {
+    expect(() => {
+      @Wired class B {
+        @Autowired() public struct: null;
+      }
+    }).to.throw(Error);
   });
 });

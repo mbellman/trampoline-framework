@@ -2,7 +2,14 @@
 A TypeScript framework for making me feel great about having developed a framework.
 
 ## Usage
-`import { ... } from 'trampoline-framework';`
+`yarn add trampoline-framework`  
+`npm install trampline-framework`  
+
+```typescript
+import { ... } from 'trampoline-framework';
+
+// ...
+```
 
 ## Decorators
 
@@ -140,10 +147,10 @@ the applicable method is called, respectively.
 
 #### @Autowired
 A property and parameter decorator which allows values to be autowired
-(automatically provided with new instances) at class instantiation or
-method call time. Classes which contain autowired properties or method
-parameters must also be decorated with **@Wired**. Right now, autowiring
-only works for instance properties or instance method parameters.  
+(automatically provided with new instances) at runtime (static-side
+properties), class instantiation time (instance-side properties), or
+method call time (parameters). Classes which contain autowired properties
+or method parameters must also be decorated with **@Wired**.
 
 Arguments can be provided to the decorator to be passed into autowired
 instances on construction.
@@ -154,9 +161,13 @@ instances on construction.
 }
 
 @Wired class DAO2 {
-  public fetch (@Autowired('route/to/api.svc') service?: Service): {
+  public fetch (@Autowired('route/to/api.svc') service: Service): {
     return service.fetch();
   }
+}
+
+@Wired class StaticDAO {
+  @Autowired() public static service: Service;
 }
 ```
 
