@@ -1,4 +1,4 @@
 export * from './decorators';
 export * from './structures';
 export * from './types';
-export * from './extensible';
+export * from './resources';

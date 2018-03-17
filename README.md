@@ -191,7 +191,7 @@ class View {
 }
 ```
 
-## Extensible classes
+## Resource classes
 
 #### Singleton
 A class which provides Singleton pattern behavior to extending
@@ -205,6 +205,24 @@ class A extends Singleton { }
 const a: A = new A();
 
 const a: A = A.getInstance();
+```
+
+#### EventManager
+A custom event handler container and dispatcher.
+
+```typescript
+const eventManager = new EventManager();
+
+function handler () { }
+function handler2 (data: any) { }
+
+eventManager.on('event', handler);
+eventManager.on('event-2', handler2);
+eventManager.trigger('event');
+eventManager.trigger('event-2', { data: 'object' });
+eventManager.off('event', handler);
+eventManager.off('event');
+eventManager.off();
 ```
 
 ## Data structures
