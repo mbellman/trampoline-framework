@@ -5,14 +5,14 @@ import 'reflect-metadata';
 /**
  * @internal
  */
-function createOwnMetadataGetter <T>(
+function createMetadataGetter <T>(
   key: string | symbol,
   defaultMetadata?: T[]
 ): MetadataGetter<T> {
   return (target: any, propertyKey?: string | symbol) => {
     const metaData = propertyKey
-      ? Reflect.getOwnMetadata(key, target, propertyKey)
-      : Reflect.getOwnMetadata(key, target);
+      ? Reflect.getMetadata(key, target, propertyKey)
+      : Reflect.getMetadata(key, target);
 
     return metaData || clone(defaultMetadata);
   };
@@ -74,7 +74,7 @@ export interface IMetadataStore<T> {
 export function createMetadataStore <T>(
   key: string | symbol
 ): IMetadataStore<T> {
-  const get = createOwnMetadataGetter<T[]>(key, []);
+  const get = createMetadataGetter<T[]>(key, []);
   const define = createMetadataDefiner<T[]>(key);
   const add = createMetadataAdder(get, define);
 
