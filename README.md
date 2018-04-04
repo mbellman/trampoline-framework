@@ -202,6 +202,26 @@ class View {
 }
 ```
 
+#### @Unfinished
+Stubs decorated methods, or all instance and static methods on decorated
+classes, with an optional warning message and a thrown Error.
+
+```typescript
+class A {
+  @Unfinished('Not done yet.')
+  public getValue (): void { }
+}
+```
+
+```typescript
+@Unfinished('Still needs work.')
+class A {
+  public field: string;
+
+  public getField (): void { }
+}
+```
+
 ## Resource classes
 
 #### Singleton
