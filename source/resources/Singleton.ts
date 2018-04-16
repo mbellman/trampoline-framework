@@ -14,8 +14,7 @@
  */
 export default abstract class Singleton {
   private static readonly CONSTRUCTOR_SYMBOL: unique symbol = Symbol('singleton');
-  private static readonly INSTANCE_KEY: unique symbol = Symbol('instance');
-  private static [Singleton.INSTANCE_KEY]: Singleton;
+  private static instance: Singleton;
 
   protected constructor (
     symbol: symbol
@@ -26,14 +25,14 @@ export default abstract class Singleton {
   }
 
   public static getInstance <T extends Singleton>(): T {
-    if (this[Singleton.INSTANCE_KEY]) {
-      return this[Singleton.INSTANCE_KEY] as T;
+    if (this.instance) {
+      return this.instance as T;
     }
 
     const { prototype } = this;
     const instance = prototype.constructor.call(Object.create(prototype), Singleton.CONSTRUCTOR_SYMBOL);
 
-    this[Singleton.INSTANCE_KEY] = instance;
+    this.instance = instance;
 
     return instance as T;
   }
