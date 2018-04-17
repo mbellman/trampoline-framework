@@ -311,6 +311,8 @@ multiMap.put('hi', 1)
 multiMap.put('hi', 2)
 multiMap.put('bye', 3)
 multiMap.put('bye', 4)
+
+multiMap.entries(); // [ ['hi', [1, 2]], ['bye', [3, 4]] ]
 multiMap.clear()
 
 multiMap.size // 0

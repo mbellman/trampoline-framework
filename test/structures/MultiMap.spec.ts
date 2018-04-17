@@ -35,7 +35,7 @@ describe('MultiMap', () => {
   });
 
   describe('clear()', () => {
-    it('should remove all entries from the Map', () => {
+    it('should remove all entries from the MultiMap', () => {
       const multiMap: MultiMap = new MultiMap();
 
       multiMap.put(1, 'hello');
@@ -46,6 +46,22 @@ describe('MultiMap', () => {
       expect(multiMap.size).to.equal(0);
       expect(multiMap.get(1)).to.be.undefined;
       expect(multiMap.get(2)).to.be.undefined;
+    });
+  });
+
+  describe('entries()', () => {
+    it('should return all entries from the MultiMap', () => {
+      const multiMap: MultiMap = new MultiMap();
+
+      multiMap.put(1, 'hello');
+      multiMap.put(2, 'goodbye');
+
+      const entries = multiMap.entries();
+
+      expect(entries).to.deep.equal([
+        [1, ['hello']],
+        [2, ['goodbye']]
+      ]);
     });
   });
 

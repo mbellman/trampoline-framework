@@ -26,6 +26,12 @@ export class MultiMap<K = any, V = any> {
     this._valueIterables.length = 0;
   }
 
+  public entries (): MultiMapIterable<K, V> {
+    return this._keys.map((key: K, i: number) => {
+      return [key, this._valueIterables[i]] as MultiMapEntry<K, V>;
+    });
+  }
+
   public forEach (
     handler: MultiMapIterationHandler<K, V>
   ): void {
